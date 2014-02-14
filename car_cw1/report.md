@@ -40,9 +40,11 @@ This predictor uses a profiling file `file` to determine addresses on which bran
 This predictor has two stages:
 
 **1. Profiling stage: lines 3 - 6**
+
 In this stage the file is profiled. We create a dictionary `addr_taken` indexed by the jump addresses of the branch instructions and for each address we save the number of times it was taken `num_taken` and the number of occurences in the file `num_found`.
 
 **2. Prediction stage: lines 8 - 12**
+
 In this stage we go through the file again and for each branch instruction we look into the `addr_taken` dictionary and compute the percentage of times the particular branch was taken in the profiling stage. If it is more than 50% than we predict that branch as taken otherwise we predict it as not taken.
 
 ### Two-level Adaptive Predictor
@@ -70,6 +72,8 @@ This predictor maintains a 2-bit finite state machine for each potential history
 
 Arguments `file`, `hist_bits`, `state_bits`, `init_state` represent the trace file being used, number of bits used for history, number of states for each finite state machine predictor and the initial state of those predictors, respectively. Dictionary `hists` is used for storing the history for each branch address and the dictionary `preds` is used for storing the predictors, initialised to `init_state`. Each branch instruction in the file is then looped over and its history `hist` is retrieved and used to retrieve the state `state` of the predictor associated with the history. If the state of the predictor is greater than half of the number of states then the branch is predicted as taken. Afterwards, the state of the predictor is incremented if the branch was taken otherwise it is decremented. History is also updated by adding the last 'taken' value to the list of previous values.
 
+\newpage
+
 ## Experiments
 I ran the experiments for both files `gcc_branch.out` and `mcf_branch.out` on each predictor. Below are the misprediction rates:
 
@@ -95,4 +99,8 @@ I ran the experiments for both files `gcc_branch.out` and `mcf_branch.out` on ea
 
 From the misprediction rate being higher for Always Not Taken predictor than Always Taken predictor for both of the files we can deduce that they both contain more branch instructions that were taken than not taken.
 
-Furthermore, we can confirm that using more bits for history does indeed improve the performance of the Two-level Adaptive Predictor but since its space complexity grows exponentially with the number of bits used for history it has a high memory overhead.
+The Profile Guided Predictor performed better than the Static Predictors but fell short of beating the Two-level Adaptive Predictor even though it was just by small difference. This implies that many branches were taken a lot more than 50% or a lot less than 50% of the time.
+
+Furthermore, we can confirm that using more bits for history does indeed improve the performance of the Two-level Adaptive Predictor but the difference is marginal and since the worst-case space complexity of the predictor, $O(n * 2^k * 2^l)$ where `n` is the number of unique addresses, `k` is the number of bits used for history, and `l` is the number of bits used for states, grows exponentially it has a very high memory overhead. Moreover, as we start increasing the number of bits used for memory the misprediction rate will go up. We can confirm this by running the program: `python 2.7 pred.py gcc_branch.out fsm --hist HIST` with increasing the argument HIST.
+
+Additionally, I ran a small script that counts the number of unique branch addresses: `sed -E 's/B (.+) [01]/\1/' [filename] | sort | uniq | wc -l` exchanging filename with both gcc\_branch.out and mcf\_branch.out and found out that gcc\_branch.out has 286 unique addresses whereas mcf\_branch.out only has 33. This could indicate that mcf\_branch.out is a trace file of a more loop-heavy program. This could explain why the adaptive predictor performed worse on mcf\_branch.out.
