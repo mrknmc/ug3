@@ -1,7 +1,8 @@
 *.py[cod]
 
 */.ipynb_checkpoints/*
-
+*.sublime-workspace
+*.sublime-project
 
 # C extensions
 *.so
