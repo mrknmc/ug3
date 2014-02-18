@@ -4,7 +4,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.*;
-import java.nio.ByteBuffer;
 
 
 public class Sender2 extends Sender1 {

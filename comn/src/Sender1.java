@@ -18,8 +18,9 @@ public class Sender1 {
 
     /**
      * Constructs a Sender1 object with given properties.
+     *
      * @param hostName the address of the server.
-     * @param port the port of the server.
+     * @param port     the port of the server.
      * @param fileName the file name of the file to transfer.
      * @throws UnknownHostException
      * @throws SocketException
@@ -35,6 +36,7 @@ public class Sender1 {
 
     /**
      * Constructs a Sender1 object with properties encoded in an array of Strings;
+     *
      * @param args arguments of the Sender1
      * @throws UnknownHostException
      * @throws SocketException
@@ -72,6 +74,7 @@ public class Sender1 {
 
     /**
      * Returns true if the arguments are valid for this sender.
+     *
      * @param args arguments to be validated.
      * @return the validity of the arguments.
      */
@@ -127,6 +130,7 @@ public class Sender1 {
 
     /**
      * Sends packets to the receiver.
+     *
      * @throws IOException
      */
     public void send() throws IOException {
@@ -148,7 +152,8 @@ public class Sender1 {
     /**
      * Creates the packet to be sent. This contains the sequence number,
      * whether we are sending the last packet and the data array.
-     * @param data message data that we are sending.
+     *
+     * @param data     message data that we are sending.
      * @param sequence sequence number sent in the header.
      * @param fileRead whether this is the last packet to be sent.
      * @return packet to be sent to the receiver.

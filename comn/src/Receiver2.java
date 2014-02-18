@@ -52,6 +52,7 @@ public class Receiver2 extends Receiver1 {
 
     /**
      * Sends the acknowledgement to the originator of the received packet.
+     *
      * @param receivedPacket packet we are acknowledging.
      */
     protected void sendAck(DatagramPacket receivedPacket) {
@@ -108,6 +109,7 @@ public class Receiver2 extends Receiver1 {
 
     /**
      * Creates the acknowledgement packet for a given received packet.
+     *
      * @param receivedPacket packet we are acknowledging.
      * @return packet to be sent as acknowledgement
      */

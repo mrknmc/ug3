@@ -19,7 +19,8 @@ public class Receiver1 {
 
     /**
      * Constructs a Receiver1 object from the given properties.
-     * @param port port number the receiver listens on.
+     *
+     * @param port     port number the receiver listens on.
      * @param fileName name of the file the receiver writes to.
      * @throws IOException
      */
@@ -37,6 +38,7 @@ public class Receiver1 {
 
     /**
      * Constructs a Receiver object from properties encoded in a String array.
+     *
      * @param args arguments of the Receiver1
      * @throws IOException
      */
@@ -66,6 +68,7 @@ public class Receiver1 {
 
     /**
      * Returns true if the arguments are valid for this receiver.
+     *
      * @param args arguments to be validated.
      * @return the validity of the arguments.
      */
@@ -83,8 +86,9 @@ public class Receiver1 {
 
     /**
      * Extracts information from the packet.
+     *
      * @param packet packet that we extract from.
-     * @param dest destination ByteBuffer that we write to.
+     * @param dest   destination ByteBuffer that we write to.
      * @return sequence number of this packet.
      * @throws RepeatedPacket
      */
@@ -115,6 +119,7 @@ public class Receiver1 {
 
     /**
      * Receives packets sent from the sender.
+     *
      * @throws IOException
      * @throws NotImplementedException
      */
