@@ -40,6 +40,20 @@ public class Sender2 extends Sender1 {
         }
     }
 
+    public int getCurACK() {
+        return curACK;
+    }
+
+    public void setCurAck(int newAck) {
+        this.curACK = newAck;
+    }
+
+    /**
+     * Waits until it gets acknowledgement from the receiver.
+     *
+     * @param timeout timeout in milliseconds.
+     * @throws IOException
+     */
     public void waitForAck(int timeout) throws IOException {
         DatagramSocket socket = getSocket();
         int curACK = getCurACK();
@@ -89,14 +103,6 @@ public class Sender2 extends Sender1 {
             }
             counter++;
         }
-    }
-
-    public int getCurACK() {
-        return curACK;
-    }
-
-    public void setCurAck(int newAck) {
-        this.curACK = newAck;
     }
 
 }

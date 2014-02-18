@@ -61,9 +61,9 @@ public class Sender1 {
         } catch (FileNotFoundException e) {
             System.out.printf("File %s not found!", args[2]);
         } catch (SocketException e) {
-
+            e.printStackTrace();
         } catch (IOException e) {
-
+            e.printStackTrace();
         } finally {
             if (sender != null) {
                 sender.close();
@@ -92,20 +92,12 @@ public class Sender1 {
         return true;
     }
 
-    public int getMsgSize() {
+    protected int getMsgSize() {
         return MSG_SIZE;
     }
 
-    public int getTotalSize() {
+    int getTotalSize() {
         return HEADER_SIZE + MSG_SIZE + EOF_FLAG_SIZE;
-    }
-
-    public InetAddress getAddress() {
-        return address;
-    }
-
-    public int getPort() {
-        return port;
     }
 
     public DatagramSocket getSocket() {
@@ -164,7 +156,7 @@ public class Sender1 {
         buffer.putShort(sequence);
         buffer.put(eof);
         buffer.put(data);
-        return new DatagramPacket(buffer.array(), 0, buffer.capacity(), getAddress(), getPort());
+        return new DatagramPacket(buffer.array(), 0, buffer.capacity(), this.address, this.port);
     }
 
 }

@@ -84,6 +84,22 @@ public class Receiver1 {
         return true;
     }
 
+    public int getMsgSize() {
+        return Sender1.MSG_SIZE;
+    }
+
+    public int getTotalSize() {
+        return Sender1.HEADER_SIZE + Sender1.MSG_SIZE + Sender1.EOF_FLAG_SIZE;
+    }
+
+    public DatagramSocket getSocket() {
+        return socket;
+    }
+
+    public FileOutputStream getOutStream() {
+        return outStream;
+    }
+
     /**
      * Extracts information from the packet.
      *
@@ -99,22 +115,6 @@ public class Receiver1 {
         byte eof = data[2];
         dest.put(data, 3, data.length - 3);
         return eof == 1 ? -1 : sequence;
-    }
-
-    public int getMsgSize() {
-        return Sender1.MSG_SIZE;
-    }
-
-    public int getTotalSize() {
-        return Sender1.HEADER_SIZE + Sender1.MSG_SIZE + Sender1.EOF_FLAG_SIZE;
-    }
-
-    public DatagramSocket getSocket() {
-        return socket;
-    }
-
-    public FileOutputStream getOutStream() {
-        return outStream;
     }
 
     /**
