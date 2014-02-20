@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
 
 public class Receiver2 extends Receiver1 {
 
-    private int curAck = 0;
+    private int curACK = 0;
     private int curSeq = -1;
 
     public Receiver2(String[] args) throws IOException {
@@ -34,12 +34,12 @@ public class Receiver2 extends Receiver1 {
         }
     }
 
-    public int getCurAck() {
-        return curAck;
+    public int getCurACK() {
+        return curACK;
     }
 
-    public void setCurAck(int curAck) {
-        this.curAck = curAck;
+    public void setCurACK(int curACK) {
+        this.curACK = curACK;
     }
 
     public int getCurSeq() {
@@ -55,27 +55,24 @@ public class Receiver2 extends Receiver1 {
      *
      * @param receivedPacket packet we are acknowledging.
      */
-    protected void sendAck(DatagramPacket receivedPacket) {
+    protected void sendACK(DatagramPacket receivedPacket) {
         DatagramSocket socket = getSocket();
-        DatagramPacket packet = makeAckPacket(receivedPacket);
-        int curACK = getCurAck();
+        DatagramPacket packet = makeACKPacket(receivedPacket);
         try {
             System.out.printf("Sending ACK %d\n", curACK);
             socket.send(packet);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        curACK = curACK == 0 ? 1 : 0;
-        setCurAck(curACK);
     }
 
     @Override
-    protected short extractPacket(DatagramPacket packet, ByteBuffer dest) throws RepeatedPacket {
-        short sequence = super.extractPacket(packet, dest);
+    protected int extractPacket(DatagramPacket packet, ByteBuffer dest) {
+        int sequence = super.extractPacket(packet, dest);
         if (sequence == getCurSeq()) {
-            throw new RepeatedPacket();
+            return -2;
         }
-        setCurSeq(sequence);
+        curSeq = sequence;
         return sequence;
     }
 
@@ -87,21 +84,18 @@ public class Receiver2 extends Receiver1 {
         ByteBuffer packetData = ByteBuffer.allocate(getMsgSize());
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
         int sequence = 0;
-        boolean repeated;
 
         while (sequence != -1) {
-            repeated = true;
             socket.receive(packet);
-            while (repeated) {
-                try {
-                    sequence = extractPacket(packet, packetData);
+            while (true) {
+                sequence = extractPacket(packet, packetData);
+                if (sequence != -2) {
                     System.out.printf("Received packet %d\n", sequence);
-                    sendAck(packet);
-                    repeated = false;
-                } catch (RepeatedPacket e) {
-                    System.out.printf("Received duplicate packet %d\n", sequence);
-                    e.printStackTrace();
+                    sendACK(packet);
+                    curACK = curACK == 0 ? 1 : 0;
+                    break;
                 }
+                System.out.printf("Received duplicate packet %d\n", sequence);
             }
             outStream.write(packetData.array());
         }
@@ -113,8 +107,8 @@ public class Receiver2 extends Receiver1 {
      * @param receivedPacket packet we are acknowledging.
      * @return packet to be sent as acknowledgement
      */
-    protected DatagramPacket makeAckPacket(DatagramPacket receivedPacket) {
-        byte[] data = {(byte) getCurAck()};
+    protected DatagramPacket makeACKPacket(DatagramPacket receivedPacket) {
+        byte[] data = {(byte) getCurACK()};
         return new DatagramPacket(data, data.length, receivedPacket.getAddress(), receivedPacket.getPort());
     }
 

@@ -5,6 +5,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.nio.ByteBuffer;
@@ -106,12 +107,11 @@ public class Receiver1 {
      * @param packet packet that we extract from.
      * @param dest   destination ByteBuffer that we write to.
      * @return sequence number of this packet.
-     * @throws RepeatedPacket
      */
-    protected short extractPacket(DatagramPacket packet, ByteBuffer dest) throws RepeatedPacket {
+    protected int extractPacket(DatagramPacket packet, ByteBuffer dest) {
         dest.clear();
         byte[] data = packet.getData();
-        short sequence = ByteBuffer.wrap(copyOfRange(data, 0, 2)).getShort();
+        int sequence = ByteBuffer.wrap(new byte[] {0, 0, data[1], data[0]}).getInt();
         byte eof = data[2];
         dest.put(data, 3, data.length - 3);
         return eof == 1 ? -1 : sequence;
@@ -125,19 +125,13 @@ public class Receiver1 {
      */
     protected void receive() throws IOException, NotImplementedException {
         byte[] buf = new byte[getTotalSize()];
-        DatagramSocket socket = getSocket();
-        FileOutputStream outStream = getOutStream();
         ByteBuffer packetData = ByteBuffer.allocate(getMsgSize());
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
         int sequence = 0;
 
         while (sequence != -1) {
             socket.receive(packet);
-            try {
-                sequence = extractPacket(packet, packetData);
-            } catch (RepeatedPacket e) {
-                throw new NotImplementedException();
-            }
+            sequence = extractPacket(packet, packetData);
             outStream.write(packetData.array());
         }
     }
@@ -156,9 +150,4 @@ public class Receiver1 {
         }
     }
 
-    /**
-     * Exception thrown when a packet has been sent twice in a row.
-     */
-    protected class RepeatedPacket extends Exception {
-    }
 }
