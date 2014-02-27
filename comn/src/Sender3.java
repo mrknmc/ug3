@@ -3,6 +3,7 @@
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 
@@ -13,11 +14,14 @@ public class Sender3 extends Sender2 {
     private DatagramPacket[] sendPackets = new DatagramPacket[Short.MAX_VALUE];
     private short nextSeqNum = 0;
     private int base = 0;
-    private SocketReceiver socketReceiver = new SocketReceiver(this);
-    private Thread receiverThread = new Thread(socketReceiver);
+
+    private volatile boolean listen = false;
+    private volatile boolean done = false;
+    private Thread receiverThread = new Thread(new SocketReceiver());
 
     public Sender3(String[] args) {
         super(args);
+        receiverThread.start();
     }
 
     public static void main(String[] args) {
@@ -29,33 +33,23 @@ public class Sender3 extends Sender2 {
         try {
             sender.send();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         } finally {
             sender.close();
         }
     }
 
     /**
-     * Starts the timer of the receiver.
-     */
-    private void startTimer() {
-        if (!receiverThread.isAlive()) {
-            receiverThread.start();
-        } else {
-            socketReceiver.restart();
-        }
-    }
-
-    /**
      * Resend all the packets that are not yet ACKed.
      */
-    private void resend() {
+    private synchronized void timeout() {
+        System.out.println("Timed out.");
         try {
             for (int i = base; i < nextSeqNum; i++) {
                 sendPacket(i);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
     }
 
@@ -63,26 +57,19 @@ public class Sender3 extends Sender2 {
     protected void sendPacket(DatagramPacket packet) throws IOException {
         DatagramSocket socket = getSocket();
         while (true) {
-            // Busy wait until it's true
             if (nextSeqNum < base + WINDOW_SIZE) {
+                // We've not sent all possible packets yet
                 sendPackets[nextSeqNum] = packet;
                 socket.send(packet);
                 if (base == nextSeqNum) {
-                    startTimer();
+                    listen = true;
                 }
                 nextSeqNum += 1;
                 break;
+            } else {
+                // We've sent all the possible packets - now we wait
+                Thread.yield();
             }
-        }
-    }
-
-    @Override
-    public void close() {
-        super.close();
-        try {
-            receiverThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 
@@ -97,58 +84,64 @@ public class Sender3 extends Sender2 {
         getSocket().send(sendPackets[idx]);
     }
 
+    /**
+     * Extracts an ACK number from the packet.
+     *
+     * @param packet packet that was received.
+     * @return
+     */
+    private int extractACK(DatagramPacket packet) {
+        byte[] data = packet.getData();
+        return ByteBuffer.wrap(new byte[]{0, 0, data[1], data[0]}).getInt();
+    }
+
+    @Override
+    public void close() {
+        this.done = true;
+        try {
+            receiverThread.join();
+        } catch (InterruptedException e) {
+            System.err.println(e.getMessage());
+        }
+        super.close();
+    }
+
+    /**
+     * @param packet
+     */
+    private synchronized void receivePacket(DatagramPacket packet) {
+        int recACK = extractACK(packet);
+        base = recACK + 1;
+        if (base == nextSeqNum) {
+            // Stop the timer
+            System.out.printf("Received ACK %d\n", recACK);
+            listen = true;
+        }
+    }
+
     private class SocketReceiver implements Runnable {
-
-        private Sender3 sender;
-        private boolean stop = false;
-
-        public SocketReceiver(Sender3 sender) {
-            this.sender = sender;
-        }
-
-        /**
-         * Extracts an ACK number from the packet.
-         *
-         * @param packet packet that was received.
-         * @return
-         */
-        private int extractACK(DatagramPacket packet) {
-            byte[] data = packet.getData();
-            return ByteBuffer.wrap(new byte[]{0, 0, data[1], data[0]}).getInt();
-        }
-
-        private void restart() {
-            this.stop = false;
-        }
+        DatagramSocket socket = getSocket();
+        DatagramPacket packet = new DatagramPacket(new byte[2], 2);
 
         @Override
         public void run() {
-            DatagramSocket socket = sender.getSocket();
-            byte[] buf = new byte[2];
-            DatagramPacket packet = new DatagramPacket(buf, buf.length);
-
-            while (true) {
-                if (!stop) {
+            try {
+                socket.setSoTimeout(DEFAULT_TIMEOUT);
+            } catch (SocketException e) {
+                System.err.println(e.getMessage());
+            }
+            while (!done) {
+                if (listen) {
                     try {
-                        socket.setSoTimeout(DEFAULT_TIMEOUT);
                         socket.receive(packet);
-                        int recACK = extractACK(packet);
-                        base = recACK + 1;
-                        if (base == nextSeqNum) {
-//                        Stop the timer
-                            System.out.printf("Received ACK %d\n", recACK);
-                            stop = true;
-                        } else {
-//                    Start the timer with the same timeout I guess
-//                    This will just re-run automagically
-                        }
+                        receivePacket(packet);
                     } catch (SocketTimeoutException e) {
-//                    Start the timer
-//                    This will just re-run automagically
-//                    Tell the sender to resend all the packets
-                        sender.resend();
+                        if (done) {
+                            return;
+                        }
+                        timeout();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        System.err.println(e.getMessage());
                     }
                 }
             }
