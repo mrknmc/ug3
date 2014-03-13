@@ -7,9 +7,9 @@ import java.nio.ByteBuffer;
 
 
 public class Sender3 {
-    public static final int MSG_SIZE = 1024;
-    public static final int HEADER_SIZE = 3;
-    public static final int DEFAULT_TIMEOUT = 2000;
+    private static final int MSG_SIZE = 1024;
+    private static final int HEADER_SIZE = 3;
+    private static final int DEFAULT_TIMEOUT = 2000;
     private static final int WINDOW_SIZE = 2;
     private InetAddress address;
     private int port;
@@ -140,7 +140,7 @@ public class Sender3 {
      * @param packet packet to be sent
      * @throws IOException
      */
-    protected void sendPacket(DatagramPacket packet) throws IOException {
+    private void sendPacket(DatagramPacket packet) throws IOException {
         while (true) {
             if (nextSeqNum < base + WINDOW_SIZE) {
                 // We've not sent all possible packets yet
@@ -176,11 +176,11 @@ public class Sender3 {
         inStream.close();
     }
 
-    protected int getMsgSize() {
+    public int getMsgSize() {
         return MSG_SIZE - HEADER_SIZE;
     }
 
-    int getTotalSize() {
+    public int getTotalSize() {
         return MSG_SIZE;
     }
 
@@ -193,7 +193,7 @@ public class Sender3 {
      * @param size     size of the data to be sent.
      * @return packet to be sent to the receiver.
      */
-    public DatagramPacket makePacket(byte[] data, int sequence, int size) {
+    private DatagramPacket makePacket(byte[] data, int sequence, int size) {
         ByteBuffer buffer = ByteBuffer.allocate(getTotalSize());
         byte eof = size == -1 ? (byte) 1 : (byte) 0;
         size = size == -1 ? 0 : size;

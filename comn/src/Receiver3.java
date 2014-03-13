@@ -8,8 +8,8 @@ import java.nio.ByteBuffer;
 
 
 public class Receiver3 {
-    public static final int MSG_SIZE = 1024;
-    public static final int HEADER_SIZE = 3;
+    private static final int MSG_SIZE = 1024;
+    private static final int HEADER_SIZE = 3;
     private DatagramSocket socket;
     private FileOutputStream outStream;
     private int curACK = 0;
@@ -91,7 +91,7 @@ public class Receiver3 {
     /**
      * Closes all of the running transactions etc.
      */
-    protected void close() throws IOException {
+    public void close() throws IOException {
         socket.close();
         outStream.flush();
         outStream.close();
@@ -105,7 +105,7 @@ public class Receiver3 {
         return MSG_SIZE;
     }
 
-    protected int extractPacket(DatagramPacket packet, ByteBuffer dest) {
+    private int extractPacket(DatagramPacket packet, ByteBuffer dest) {
         dest.clear();
         byte[] data = packet.getData();
         int sequence = ByteBuffer.wrap(new byte[]{0, 0, data[1], data[0]}).getInt();
@@ -118,7 +118,7 @@ public class Receiver3 {
         return eof == 1 ? -1 : sequence;
     }
 
-    protected void receive() throws IOException {
+    public void receive() throws IOException {
         byte[] buf = new byte[getTotalSize()];
         ByteBuffer packetData = ByteBuffer.allocate(getMsgSize());
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
@@ -146,13 +146,13 @@ public class Receiver3 {
      *
      * @param receivedPacket packet we are acknowledging.
      */
-    protected void sendACK(DatagramPacket receivedPacket) throws IOException {
+    private void sendACK(DatagramPacket receivedPacket) throws IOException {
         DatagramPacket packet = makeACKPacket(receivedPacket);
         socket.send(packet);
         System.out.printf("Sent ACK %d.\n", curACK);
     }
 
-    protected DatagramPacket makeACKPacket(DatagramPacket receivedPacket) {
+    private DatagramPacket makeACKPacket(DatagramPacket receivedPacket) {
         ByteBuffer buffer = ByteBuffer.allocate(2);
         byte[] byteExpectedSeqNum = intToBytes(curACK, 2);
         buffer.put(byteExpectedSeqNum);

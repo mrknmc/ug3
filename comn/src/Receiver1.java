@@ -8,8 +8,8 @@ import java.nio.ByteBuffer;
 
 
 public class Receiver1 {
-    public static final int MSG_SIZE = 1024;
-    public static final int HEADER_SIZE = 3;
+    private static final int MSG_SIZE = 1024;
+    private static final int HEADER_SIZE = 3;
     private DatagramSocket socket;
     private FileOutputStream outStream;
 
@@ -87,7 +87,7 @@ public class Receiver1 {
      * @param dest   destination ByteBuffer that we write to.
      * @return sequence number of this packet.
      */
-    protected int extractPacket(DatagramPacket packet, ByteBuffer dest) {
+    private int extractPacket(DatagramPacket packet, ByteBuffer dest) {
         dest.clear();
         byte[] data = packet.getData();
         int sequence = ByteBuffer.wrap(new byte[]{0, 0, data[1], data[0]}).getInt();
@@ -101,7 +101,7 @@ public class Receiver1 {
      *
      * @throws IOException
      */
-    protected void receive() throws IOException {
+    public void receive() throws IOException {
         byte[] buf = new byte[getTotalSize()];
         ByteBuffer packetData = ByteBuffer.allocate(getMsgSize());
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
@@ -121,7 +121,7 @@ public class Receiver1 {
     /**
      * Closes all of the running transactions etc.
      */
-    protected void close() throws IOException {
+    public void close() throws IOException {
         socket.close();
         outStream.flush();
         outStream.close();

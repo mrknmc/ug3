@@ -123,11 +123,11 @@ public class Sender2 {
         inStream.close();
     }
 
-    protected int getMsgSize() {
+    public int getMsgSize() {
         return MSG_SIZE - HEADER_SIZE;
     }
 
-    int getTotalSize() {
+    public int getTotalSize() {
         return MSG_SIZE;
     }
 
@@ -137,7 +137,7 @@ public class Sender2 {
      * @param timeout timeout in milliseconds.
      * @throws IOException
      */
-    public int waitForACK(int timeout) throws IOException {
+    private int waitForACK(int timeout) throws IOException {
         byte[] buf = new byte[1];
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
         socket.setSoTimeout(timeout);
@@ -159,7 +159,7 @@ public class Sender2 {
      * @param packet packet to be sent
      * @throws IOException
      */
-    protected void sendPacket(DatagramPacket packet) throws IOException {
+    private void sendPacket(DatagramPacket packet) throws IOException {
         while (true) {
             try {
                 socket.send(packet);
@@ -180,7 +180,7 @@ public class Sender2 {
      * @param size     size of the data to be sent
      * @return packet to be sent to the receiver.
      */
-    public DatagramPacket makePacket(byte[] data, int sequence, int size) {
+    private DatagramPacket makePacket(byte[] data, int sequence, int size) {
         ByteBuffer buffer = ByteBuffer.allocate(getTotalSize());
         byte eof = size == -1 ? (byte) 1 : (byte) 0;
         size = size == -1 ? 0 : size;

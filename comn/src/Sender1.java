@@ -92,11 +92,11 @@ public class Sender1 {
         return true;
     }
 
-    protected int getMsgSize() {
+    public int getMsgSize() {
         return MSG_SIZE - HEADER_SIZE;
     }
 
-    int getTotalSize() {
+    public int getTotalSize() {
         return MSG_SIZE;
     }
 
@@ -137,7 +137,7 @@ public class Sender1 {
      * @param size     size of the data to be sent.
      * @return packet to be sent to the receiver.
      */
-    public DatagramPacket makePacket(byte[] data, int sequence, int size) {
+    private DatagramPacket makePacket(byte[] data, int sequence, int size) {
         ByteBuffer buffer = ByteBuffer.allocate(getTotalSize());
         byte eof = size == -1 ? (byte) 1 : (byte) 0;
         size = size == -1 ? 0 : size;
