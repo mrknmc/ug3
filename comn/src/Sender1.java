@@ -145,7 +145,6 @@ public class Sender1 {
         buffer.put(byteSequence);
         buffer.put(eof);
         buffer.put(data, 0, size);
-        System.out.println(buffer.position());
         return new DatagramPacket(buffer.array(), 0, buffer.position(), address, port);
     }
 
