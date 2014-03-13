@@ -119,7 +119,7 @@ public class Receiver2 {
         byte[] buf = new byte[getTotalSize()];
         ByteBuffer packetData = ByteBuffer.allocate(getMsgSize());
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
-        int sequence = 0;
+        int sequence;
 
         while (true) {
             socket.receive(packet);

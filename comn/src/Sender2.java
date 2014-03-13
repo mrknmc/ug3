@@ -103,12 +103,12 @@ public class Sender2 {
     public void send() throws IOException {
         DatagramPacket packet;
         byte[] byteArray = new byte[getMsgSize()];
-        boolean fileRead = false;
+        int size = 0;
         int counter = 0;
 
-        while (!fileRead) {
-            fileRead = inStream.read(byteArray) == -1;
-            packet = makePacket(byteArray, counter, fileRead);
+        while (size != -1) {
+            size = inStream.read(byteArray);
+            packet = makePacket(byteArray, counter, size);
             sendPacket(packet);
             System.out.printf("Sent packet %d\n", counter);
             counter++;
@@ -177,17 +177,18 @@ public class Sender2 {
      *
      * @param data     message data that we are sending.
      * @param sequence sequence number sent in the header.
-     * @param fileRead whether this is the last packet to be sent.
+     * @param size     size of the data to be sent
      * @return packet to be sent to the receiver.
      */
-    public DatagramPacket makePacket(byte[] data, int sequence, boolean fileRead) {
+    public DatagramPacket makePacket(byte[] data, int sequence, int size) {
         ByteBuffer buffer = ByteBuffer.allocate(getTotalSize());
-        byte eof = fileRead ? (byte) 1 : (byte) 0;
+        byte eof = size == -1 ? (byte) 1 : (byte) 0;
+        size = size == -1 ? 0 : size;
         byte[] byteSequence = intToBytes(sequence, 2);
         buffer.put(byteSequence);
         buffer.put(eof);
-        buffer.put(data);
-        return new DatagramPacket(buffer.array(), 0, buffer.capacity(), this.address, this.port);
+        buffer.put(data, 0, size);
+        return new DatagramPacket(buffer.array(), 0, buffer.position(), address, port);
     }
 
 }
