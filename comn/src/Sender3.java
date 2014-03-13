@@ -169,6 +169,9 @@ public class Sender3 {
         return ByteBuffer.wrap(new byte[]{0, 0, data[1], data[0]}).getInt();
     }
 
+    /**
+     * Closes all of the running transactions etc.
+     */
     public void close() throws IOException, InterruptedException {
         done = true;
         receiverThread.join();
@@ -176,10 +179,18 @@ public class Sender3 {
         inStream.close();
     }
 
+    /**
+     * Returns the message size of a packet.
+     * @return size of a message of a packet.
+     */
     public int getMsgSize() {
         return MSG_SIZE - HEADER_SIZE;
     }
 
+    /**
+     * Returns the total size of a packet.
+     * @return total size of a packet.
+     */
     public int getTotalSize() {
         return MSG_SIZE;
     }
@@ -205,7 +216,8 @@ public class Sender3 {
     }
 
     /**
-     * @param packet
+     * Receives an acknowledgement packet.
+     * @param packet packet that was received.
      */
     private synchronized void receivePacket(DatagramPacket packet) {
         int recACK = extractACK(packet);
@@ -218,6 +230,11 @@ public class Sender3 {
 
     private class SocketReceiver implements Runnable {
 
+        /**
+         * Runs on a background thread listening for incoming
+         * acknowledgement packets which are then sent to
+         * the main thread.
+         */
         @Override
         public void run() {
             DatagramPacket packet = new DatagramPacket(new byte[2], 2);

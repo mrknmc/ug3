@@ -123,10 +123,18 @@ public class Sender2 {
         inStream.close();
     }
 
+    /**
+     * Returns the message size of a packet.
+     * @return size of a message of a packet.
+     */
     public int getMsgSize() {
         return MSG_SIZE - HEADER_SIZE;
     }
 
+    /**
+     * Returns the total size of a packet.
+     * @return total size of a packet.
+     */
     public int getTotalSize() {
         return MSG_SIZE;
     }

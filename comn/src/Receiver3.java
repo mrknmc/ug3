@@ -97,14 +97,31 @@ public class Receiver3 {
         outStream.close();
     }
 
+    /**
+     * Returns the message size of a packet.
+     *
+     * @return size of a message of a packet.
+     */
     public int getMsgSize() {
         return MSG_SIZE - HEADER_SIZE;
     }
 
+    /**
+     * Returns the total size of a packet.
+     *
+     * @return total size of a packet.
+     */
     public int getTotalSize() {
         return MSG_SIZE;
     }
 
+    /**
+     * Extracts information from the packet.
+     *
+     * @param packet packet that we extract from.
+     * @param dest   destination ByteBuffer that we write to.
+     * @return sequence number of this packet.
+     */
     private int extractPacket(DatagramPacket packet, ByteBuffer dest) {
         dest.clear();
         byte[] data = packet.getData();
@@ -118,6 +135,11 @@ public class Receiver3 {
         return eof == 1 ? -1 : sequence;
     }
 
+    /**
+     * Receives packets sent from the sender.
+     *
+     * @throws IOException
+     */
     public void receive() throws IOException {
         byte[] buf = new byte[getTotalSize()];
         ByteBuffer packetData = ByteBuffer.allocate(getMsgSize());
@@ -152,6 +174,11 @@ public class Receiver3 {
         System.out.printf("Sent ACK %d.\n", curACK);
     }
 
+    /**
+     * Creates an acknowledgement packet which is sent to the sender.
+     * @param receivedPacket packet we are acknowledging.
+     * @return acknowledgement packet to be sent to the sender.
+     */
     private DatagramPacket makeACKPacket(DatagramPacket receivedPacket) {
         ByteBuffer buffer = ByteBuffer.allocate(2);
         byte[] byteExpectedSeqNum = intToBytes(curACK, 2);

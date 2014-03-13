@@ -94,14 +94,31 @@ public class Receiver2 {
         System.out.printf("Sent ACK %d.\n", curACK);
     }
 
+    /**
+     * Returns the message size of a packet.
+     *
+     * @return size of a message of a packet.
+     */
     public int getMsgSize() {
         return MSG_SIZE - HEADER_SIZE;
     }
 
+    /**
+     * Returns the total size of a packet.
+     *
+     * @return total size of a packet.
+     */
     public int getTotalSize() {
         return MSG_SIZE;
     }
 
+    /**
+     * Extracts information from the packet.
+     *
+     * @param packet packet that we extract from.
+     * @param dest   destination ByteBuffer that we write to.
+     * @return sequence number of this packet.
+     */
     private int extractPacket(DatagramPacket packet, ByteBuffer dest) {
         dest.clear();
         byte[] data = packet.getData();
@@ -115,6 +132,11 @@ public class Receiver2 {
         return eof == 1 ? -1 : sequence;
     }
 
+    /**
+     * Receives packets sent from the sender.
+     *
+     * @throws IOException
+     */
     public void receive() throws IOException {
         byte[] buf = new byte[getTotalSize()];
         ByteBuffer packetData = ByteBuffer.allocate(getMsgSize());
