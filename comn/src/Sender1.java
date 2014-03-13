@@ -134,7 +134,7 @@ public class Sender1 {
      *
      * @param data     message data that we are sending.
      * @param sequence sequence number sent in the header.
-     * @param size size of the data to be sent.
+     * @param size     size of the data to be sent.
      * @return packet to be sent to the receiver.
      */
     public DatagramPacket makePacket(byte[] data, int sequence, int size) {

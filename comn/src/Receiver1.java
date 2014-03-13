@@ -92,7 +92,7 @@ public class Receiver1 {
         byte[] data = packet.getData();
         int sequence = ByteBuffer.wrap(new byte[]{0, 0, data[1], data[0]}).getInt();
         byte eof = data[2];
-        dest.put(data, 3, packet.getLength() - 3);
+        dest.put(data, HEADER_SIZE, packet.getLength() - HEADER_SIZE);
         return eof == 1 ? -1 : sequence;
     }
 
