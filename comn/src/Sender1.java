@@ -1,16 +1,16 @@
 /* Mark Nemec s1140740 */
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 
 
 public class Sender1 {
     public static final int MSG_SIZE = 1024;
-    public static final int HEADER_SIZE = 2;
-    public static final int EOF_FLAG_SIZE = 1;
+    public static final int HEADER_SIZE = 3;
     private InetAddress address;
     private int port;
     private DatagramSocket socket;
@@ -23,21 +23,11 @@ public class Sender1 {
      * @param port     the port of the server.
      * @param fileName the file name of the file to transfer.
      */
-    public Sender1(String hostName, int port, String fileName) {
-        try {
-            this.address = InetAddress.getByName(hostName);
-            this.port = port;
-            this.socket = new DatagramSocket();
-            inStream = new FileInputStream(fileName);
-        } catch (UnknownHostException e) {
-            System.out.printf("Host %s is unknown!\n", hostName);
-        } catch (FileNotFoundException e) {
-            System.out.printf("File %s not found!", fileName);
-        } catch (SocketException e) {
-            // Something wrong with the socket
-            e.printStackTrace();
-        }
-
+    public Sender1(String hostName, int port, String fileName) throws IOException {
+        this.address = InetAddress.getByName(hostName);
+        this.port = port;
+        this.socket = new DatagramSocket();
+        this.inStream = new FileInputStream(fileName);
     }
 
     /**
@@ -45,37 +35,39 @@ public class Sender1 {
      *
      * @param args arguments of the Sender1
      */
-    public Sender1(String[] args) {
+    public Sender1(String[] args) throws IOException {
         this(args[0], Integer.parseInt(args[1]), args[2]);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         if (!validateArgs(args)) {
             System.exit(1);
         }
-
-        Sender1 sender = new Sender1(args);
+        Sender1 sender = null;
         try {
+            sender = new Sender1(args);
             sender.send();
+            System.out.println("File sent.");
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            sender.close();
+            if (sender != null) {
+                sender.close();
+            }
         }
-        System.out.println("File sent.");
     }
 
     /**
      * Converts an int into a specified number of bytes
-     * @param value integer value to convert
+     *
+     * @param value      integer value to convert
      * @param numOfBytes how many bytes to use for the int
      * @return int converted into a byte array
      */
     public static byte[] intToBytes(int value, int numOfBytes) {
-        byte[] byteArray =  new byte[numOfBytes];
+        byte[] byteArray = new byte[numOfBytes];
         for (int i = 0; i < numOfBytes; i++) {
-            int shift = 8 * i;
-            byteArray[i] = (byte) ((value >> shift) & 0xFF);
+            byteArray[i] = (byte) ((value >> 8 * i) & 0xFF);
         }
         return byteArray;
     }
@@ -89,11 +81,11 @@ public class Sender1 {
     public static boolean validateArgs(String[] args) {
         if (args.length < 3) {
             if (args.length < 1) {
-                System.out.println("No host name specified!");
+                System.err.println("No host name specified!");
             } else if (args.length < 2) {
-                System.out.println("No port number specified!");
+                System.err.println("No port number specified!");
             } else {
-                System.out.println("No file name specified!");
+                System.err.println("No file name specified!");
             }
             return false;
         }
@@ -101,31 +93,19 @@ public class Sender1 {
     }
 
     protected int getMsgSize() {
-        return MSG_SIZE;
+        return MSG_SIZE - HEADER_SIZE;
     }
 
     int getTotalSize() {
-        return HEADER_SIZE + MSG_SIZE + EOF_FLAG_SIZE;
-    }
-
-    public DatagramSocket getSocket() {
-        return socket;
-    }
-
-    public FileInputStream getInStream() {
-        return inStream;
+        return MSG_SIZE;
     }
 
     /**
      * Closes all of the running transactions etc.
      */
-    public void close() {
-        getSocket().close();
-        try {
-            getInStream().close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void close() throws IOException {
+        socket.close();
+        inStream.close();
     }
 
     /**
@@ -135,26 +115,17 @@ public class Sender1 {
      */
     public void send() throws IOException {
         DatagramPacket packet;
-
         byte[] byteArray = new byte[getMsgSize()];
-        boolean fileRead = false;
+        int size = 0;
         int counter = 0;
-        while (!fileRead) {
-            fileRead = inStream.read(byteArray) == -1;
-            packet = makePacket(byteArray, counter, fileRead);
-            sendPacket(packet);
+
+        while (size != -1) {
+            size = inStream.read(byteArray);
+            packet = makePacket(byteArray, counter, size);
+            socket.send(packet);
             System.out.printf("Sent packet %d\n", counter);
             counter++;
         }
-    }
-
-    /**
-     * Send a single packet of data.
-     *
-     * @param packet packet to be sent
-     */
-    protected void sendPacket(DatagramPacket packet) throws IOException {
-        socket.send(packet);
     }
 
     /**
@@ -163,17 +134,19 @@ public class Sender1 {
      *
      * @param data     message data that we are sending.
      * @param sequence sequence number sent in the header.
-     * @param fileRead whether this is the last packet to be sent.
+     * @param size size of the data to be sent.
      * @return packet to be sent to the receiver.
      */
-    public DatagramPacket makePacket(byte[] data, int sequence, boolean fileRead) {
+    public DatagramPacket makePacket(byte[] data, int sequence, int size) {
         ByteBuffer buffer = ByteBuffer.allocate(getTotalSize());
-        byte eof = fileRead ? (byte) 1 : (byte) 0;
+        byte eof = size == -1 ? (byte) 1 : (byte) 0;
+        size = size == -1 ? 0 : size;
         byte[] byteSequence = intToBytes(sequence, 2);
         buffer.put(byteSequence);
         buffer.put(eof);
-        buffer.put(data);
-        return new DatagramPacket(buffer.array(), 0, buffer.capacity(), this.address, this.port);
+        buffer.put(data, 0, size);
+        System.out.println(buffer.position());
+        return new DatagramPacket(buffer.array(), 0, buffer.position(), address, port);
     }
 
 }

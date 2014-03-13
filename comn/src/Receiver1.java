@@ -1,20 +1,15 @@
 /* Mark Nemec s1140740 */
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.nio.ByteBuffer;
 
-import static java.util.Arrays.copyOfRange;
-
 
 public class Receiver1 {
-
+    public static final int MSG_SIZE = 1024;
+    public static final int HEADER_SIZE = 3;
     private DatagramSocket socket;
     private FileOutputStream outStream;
 
@@ -27,14 +22,7 @@ public class Receiver1 {
      */
     public Receiver1(int port, String fileName) throws IOException {
         this.socket = new DatagramSocket(port);
-        File outFile = new File(fileName);
-        if (!outFile.exists()) {
-            if (!outFile.createNewFile()) {
-                throw new IOException("Could not create the output file!");
-            }
-        }
-        this.outStream = new FileOutputStream(outFile);
-
+        this.outStream = new FileOutputStream(fileName);
     }
 
     /**
@@ -47,16 +35,16 @@ public class Receiver1 {
         this(Integer.parseInt(args[0]), args[1]);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         if (!validateArgs(args)) {
             System.exit(1);
         }
 
         Receiver1 receiver = null;
-
         try {
             receiver = new Receiver1(args);
             receiver.receive();
+            System.out.println("File received.");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -64,7 +52,6 @@ public class Receiver1 {
                 receiver.close();
             }
         }
-        System.out.println("File received.");
     }
 
     /**
@@ -76,9 +63,9 @@ public class Receiver1 {
     public static boolean validateArgs(String[] args) {
         if (args.length < 2) {
             if (args.length < 1) {
-                System.out.println("No port number specified!");
+                System.err.println("No port number specified!");
             } else {
-                System.out.println("No file name specified!");
+                System.err.println("No file name specified!");
             }
             return false;
         }
@@ -86,19 +73,11 @@ public class Receiver1 {
     }
 
     public int getMsgSize() {
-        return Sender1.MSG_SIZE;
+        return MSG_SIZE - HEADER_SIZE;
     }
 
     public int getTotalSize() {
-        return Sender1.HEADER_SIZE + Sender1.MSG_SIZE + Sender1.EOF_FLAG_SIZE;
-    }
-
-    public DatagramSocket getSocket() {
-        return socket;
-    }
-
-    public FileOutputStream getOutStream() {
-        return outStream;
+        return MSG_SIZE;
     }
 
     /**
@@ -111,9 +90,9 @@ public class Receiver1 {
     protected int extractPacket(DatagramPacket packet, ByteBuffer dest) {
         dest.clear();
         byte[] data = packet.getData();
-        int sequence = ByteBuffer.wrap(new byte[] {0, 0, data[1], data[0]}).getInt();
+        int sequence = ByteBuffer.wrap(new byte[]{0, 0, data[1], data[0]}).getInt();
         byte eof = data[2];
-        dest.put(data, 3, data.length - 3);
+        dest.put(data, 3, packet.getLength() - 3);
         return eof == 1 ? -1 : sequence;
     }
 
@@ -121,17 +100,20 @@ public class Receiver1 {
      * Receives packets sent from the sender.
      *
      * @throws IOException
-     * @throws NotImplementedException
      */
-    protected void receive() throws IOException, NotImplementedException {
+    protected void receive() throws IOException {
         byte[] buf = new byte[getTotalSize()];
         ByteBuffer packetData = ByteBuffer.allocate(getMsgSize());
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
-        int sequence = 0;
+        int sequence;
 
-        while (sequence != -1) {
+        while (true) {
             socket.receive(packet);
             sequence = extractPacket(packet, packetData);
+            System.out.printf("Received packet %d.\n", sequence);
+            if (sequence == -1) {
+                break;
+            }
             outStream.write(packetData.array());
         }
     }
@@ -139,15 +121,10 @@ public class Receiver1 {
     /**
      * Closes all of the running transactions etc.
      */
-    protected void close() {
-        getSocket().close();
-        FileOutputStream outStream = getOutStream();
-        try {
-            outStream.flush();
-            outStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    protected void close() throws IOException {
+        socket.close();
+        outStream.flush();
+        outStream.close();
     }
 
 }
