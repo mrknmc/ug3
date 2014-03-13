@@ -21,7 +21,7 @@ def set_associative(file, size=4096, block=32, sets=1, **kwargs):
     misses = {'R': 0, 'W': 0}
 
     offset_size = int(log(block, 2))  # need 5 bits for 32 bytes
-    index_size = int(log(size / float(block), 2))
+    index_size = int(log(size / block / float(sets), 2))
 
     for op, addr in parse(file):
         tag, index, offset = decode(addr, offset_size, index_size)
@@ -56,7 +56,6 @@ def direct_mapped(file, size=4096, block=32, **kwargs):
 
     for op, addr in parse(file):
         tag, index, offset = decode(addr, offset_size, index_size)
-
         total[op] += 1
 
         if index not in cache:
@@ -80,11 +79,11 @@ def decode(addr, offset_size=8, index_size=7):
     """Decodes a raw address into a block address."""
 
     # get offset then shift
-    offset = addr & int('1' * offset_size, 2)
+    offset = addr & pow(2, offset_size) - 1
     addr = addr >> offset_size
 
     # get index then shift
-    index = addr & int('1' * index_size, 2)
+    index = addr & pow(2, index_size) - 1
     addr = addr >> index_size
 
     # now only tag left
