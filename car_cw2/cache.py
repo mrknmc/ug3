@@ -72,22 +72,6 @@ def parse(file_, offset_size, index_size):
     file_.seek(0)  # reset file pointer
 
 
-def experiments():
-    filenames = 'gcc_memref.out', 'mcf_memref.out'
-    print ', '.join(['file', 'size', 'sets', 'total', 'reads', 'writes'])
-    for fn in filenames:
-        print ''
-        with open(fn) as f:
-            for a in (1, 2, 4, 8, 16):
-                print str(a) + ',',
-                for s in (4, 8, 16, 32, 64):
-                    total, misses = set_associative(f, size=s * 1024, sets=a)
-                    # total_sum = sum(total.itervalues())
-                    # misses_sum = sum(misses.itervalues())
-                    print str(misses['W'] / float(total['W'])) + ',',
-                print ''
-
-
 def main(filename=None, **kwargs):
     with open(filename) as file_:
         total, misses = set_associative(file_, **kwargs)
