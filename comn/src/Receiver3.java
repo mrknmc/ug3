@@ -146,21 +146,17 @@ public class Receiver3 {
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
         int sequence;
 
-        while (true) {
+        do {
             socket.receive(packet);
             sequence = extractPacket(packet, packetData);
             System.out.printf("Received packet %d.\n", sequence);
-            if (sequence == curACK) {
-                // We ok
+            if (sequence == curACK || sequence == -1) {
+                //
                 sendACK(packet);
                 outStream.write(packetData.array());
                 curACK += 1;
-            } else if (sequence == -1) {
-                // It over
-                sendACK(packet);
-                break;
             }
-        }
+        } while (sequence != -1);
     }
 
     /**

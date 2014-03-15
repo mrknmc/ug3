@@ -1,3 +1,6 @@
 out/*
 .idea/*
 *.iml
+Dummy*
+dummy*
+startvm.sh

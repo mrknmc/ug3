@@ -115,15 +115,12 @@ public class Receiver1 {
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
         int sequence;
 
-        while (true) {
+        do {
             socket.receive(packet);
             sequence = extractPacket(packet, packetData);
             System.out.printf("Received packet %d.\n", sequence);
-            if (sequence == -1) {
-                break;
-            }
             outStream.write(packetData.array());
-        }
+        } while (sequence != -1);
     }
 
     /**

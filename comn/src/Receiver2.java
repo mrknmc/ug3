@@ -143,7 +143,7 @@ public class Receiver2 {
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
         int sequence;
 
-        while (true) {
+        do {
             socket.receive(packet);
             sequence = extractPacket(packet, packetData);
             System.out.printf("Received packet %d.\n", sequence);
@@ -152,15 +152,10 @@ public class Receiver2 {
                 System.out.printf("Received duplicate packet %d.\n", sequence);
             } else {
                 sendACK(packet);
-                if (sequence == -1) {
-                    break;
-                } else {
-                    // Only write data if not last packet
-                    curACK = curACK == 0 ? 1 : 0;
-                    outStream.write(packetData.array());
-                }
+                curACK = curACK == 0 ? 1 : 0;
+                outStream.write(packetData.array());
             }
-        }
+        } while (sequence != -1);
     }
 
     /**

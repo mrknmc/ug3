@@ -109,15 +109,21 @@ public class Sender3 {
     public void send() throws IOException {
         DatagramPacket packet;
         byte[] byteArray = new byte[getMsgSize()];
-        int size = 0;
+        byte[] nextByteArray = new byte[getMsgSize()];
+        int size = inStream.read(byteArray);
+        int nextSize;
+        boolean fileRead = size == -1;
         int counter = 0;
 
-        while (size != -1) {
-            size = inStream.read(byteArray);
-            packet = makePacket(byteArray, counter, size);
+        while (!fileRead) {
+            nextSize = inStream.read(nextByteArray);
+            fileRead = nextSize == -1;
+            packet = makePacket(byteArray, counter, size, fileRead);
+            System.out.printf("Sent packet %d\n", counter);
             sendPacket(packet);
-            System.out.printf("Sent Packet %d.\n", counter);
             counter++;
+            size = nextSize;
+            byteArray = nextByteArray;
         }
         while (base + 1 < nextSeqNum) {
         }
@@ -204,10 +210,9 @@ public class Sender3 {
      * @param size     size of the data to be sent.
      * @return packet to be sent to the receiver.
      */
-    private DatagramPacket makePacket(byte[] data, int sequence, int size) {
+    private DatagramPacket makePacket(byte[] data, int sequence, int size, boolean fileRead) {
         ByteBuffer buffer = ByteBuffer.allocate(getTotalSize());
-        byte eof = size == -1 ? (byte) 1 : (byte) 0;
-        size = size == -1 ? 0 : size;
+        byte eof = fileRead ? (byte) 1 : (byte) 0;
         byte[] byteSequence = intToBytes(sequence, 2);
         buffer.put(byteSequence);
         buffer.put(eof);
