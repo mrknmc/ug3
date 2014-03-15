@@ -6,26 +6,24 @@ from argparse import ArgumentParser
 from collections import deque
 
 
-def parse(file):
-    """Parses the file."""
-    for line in file:
-        op, addr = line.split()
-        yield op, int(addr, 16)
-    file.seek(0)  # reset file pointer
-
-
 def set_associative(file, size=4096, block=32, sets=1, **kwargs):
-    """"""
+    """
+    Simulates a set-associative cache.
+        :param file: tracefile to be used for simulation
+        :param size: size of the cache
+        :param block: size of a block of memory
+        :param sets: set-associativity
+        :returns: total number of operations, missed number of operations
+    """
     cache = {}
     total = {'R': 0, 'W': 0}
     misses = {'R': 0, 'W': 0}
 
-    offset_size = int(log(block, 2))  # need 5 bits for 32 bytes
+    offset_size = int(log(block, 2))  # e.g. need 5 bits for 32 bytes
     index_size = int(log(size / block / float(sets), 2))
 
     for op, addr in parse(file):
         tag, index, offset = decode(addr, offset_size, index_size)
-
         total[op] += 1
 
         if index not in cache:
@@ -45,44 +43,31 @@ def set_associative(file, size=4096, block=32, sets=1, **kwargs):
     return total, misses
 
 
-def direct_mapped(file, size=4096, block=32, **kwargs):
-    """Uses a direct-mapped cache with the simulator."""
-    cache = {}
-    total = {'R': 0, 'W': 0}
-    misses = {'R': 0, 'W': 0}
-
-    offset_size = int(log(block, 2))  # need 5 bits for 32 bytes
-    index_size = int(log(size / float(block), 2))
-
-    for op, addr in parse(file):
-        tag, index, offset = decode(addr, offset_size, index_size)
-        total[op] += 1
-
-        if index not in cache:
-            # not in cache - add it
-            misses[op] += 1
-            cache[index] = tag
-        else:
-            if cache[index] != tag:
-                # different tag - replace it
-                misses[op] += 1
-                cache[index] = tag
-            else:
-                if op == 'W':
-                    # replace the value
-                    cache[index] = tag
-
-    return total, misses
+def parse(file):
+    """
+    Generator that parses a given file.
+        :param file: file to parse
+        :returns: an operation (R|W) and the address
+    """
+    for line in file:
+        op, addr = line.split()
+        yield op, int(addr, 16)
+    file.seek(0)  # reset file pointer
 
 
-def decode(addr, offset_size=8, index_size=7):
-    """Decodes a raw address into a block address."""
-
-    # get offset then shift
+def decode(addr, offset_size, index_size):
+    """
+    Decodes a raw address into a block address.
+        :param addr: address to be decoded
+        :param offset_size: number of bits used for the offset
+        :param index_size: number of bits used for the index
+        :returns: triple of tag, index and offset
+    """
+    # get offset with a bitmask then shift
     offset = addr & pow(2, offset_size) - 1
     addr = addr >> offset_size
 
-    # get index then shift
+    # get index with a bitmask then shift
     index = addr & pow(2, index_size) - 1
     addr = addr >> index_size
 
@@ -94,23 +79,15 @@ def decode(addr, offset_size=8, index_size=7):
 
 def main(filename=None, cache=None, **kwargs):
     """"""
-    caches = {'direct-mapped': direct_mapped, 'set-associative': set_associative}
     with open(filename) as file:
-        total, misses = caches[cache](file, **kwargs)
+        total, misses = set_associative(file, **kwargs)
         print 'Total Miss Rate: {:.4%}'.format(sum(misses.values()) / float(sum(total.values())))
         print 'Read Miss Rate: {:.4%}'.format(misses['R'] / float(total['R']))
         print 'Write Miss Rate: {:.4%}'.format(misses['W'] / float(total['W']))
 
 
 if __name__ == '__main__':
-    parser = ArgumentParser(description='Run branch predictors on a given trace file.')
-    parser.add_argument(
-        'cache',
-        metavar='type',
-        type=str,
-        help='Type of cache: (direct-mapped|set-associative).',
-        choices=('direct-mapped', 'set-associative')
-    )
+    parser = ArgumentParser(description='Run a cache simulator on a given trace file.')
     parser.add_argument(
         'filename',
         metavar='tracefile',
@@ -132,7 +109,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--sets',
         type=int,
-        default=2,
+        default=1,
         help='Number of sets in the set-associative cache.'
     )
     args = vars(parser.parse_args())
