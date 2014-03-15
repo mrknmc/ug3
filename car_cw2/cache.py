@@ -6,13 +6,13 @@ from argparse import ArgumentParser
 from collections import deque
 
 
-def set_associative(file, size=4096, block=32, sets=1, **kwargs):
+def set_associative(file, size=4096, block=32, sets=1):
     """
     Simulates a set-associative cache.
-        :param file: tracefile to be used for simulation
-        :param size: size of the cache
-        :param block: size of a block of memory
-        :param sets: set-associativity
+        :param file: tracefile to be used for simulation.
+        :param size: size of the cache in bytes
+        :param block: size of a block of memory in bytes.
+        :param sets: set-associativity.
         :returns: total number of operations, missed number of operations
     """
     cache = {}
@@ -22,8 +22,7 @@ def set_associative(file, size=4096, block=32, sets=1, **kwargs):
     offset_size = int(log(block, 2))  # e.g. need 5 bits for 32 bytes
     index_size = int(log(size / block / float(sets), 2))
 
-    for op, addr in parse(file):
-        tag, index, offset = decode(addr, offset_size, index_size)
+    for op, tag, index, offset in parse(file, offset_size, index_size):
         total[op] += 1
 
         if index not in cache:
@@ -43,47 +42,45 @@ def set_associative(file, size=4096, block=32, sets=1, **kwargs):
     return total, misses
 
 
-def parse(file):
+def parse(file, offset_size, index_size):
     """
     Generator that parses a given file.
-        :param file: file to parse
-        :returns: an operation (R|W) and the address
+        :param file: file to parse.
+        :param offset_size: number of bits used for the offset.
+        :param index_size: number of bits used for the index.
+        :returns: quadruple of the operation (R|W), tag, index and offset.
     """
+    offset_mask = pow(2, offset_size) - 1
+    index_mask = pow(2, index_size) - 1
+
     for line in file:
         op, addr = line.split()
-        yield op, int(addr, 16)
+        addr = int(addr, 16)
+
+        # get offset with a bitmask then shift
+        offset = addr & offset_mask
+        addr = addr >> offset_size
+
+        # get index with a bitmask then shift
+        index = addr & index_mask
+        addr = addr >> index_size
+
+        # now only tag left
+        tag = addr
+
+        yield op, tag, index, offset
+
     file.seek(0)  # reset file pointer
 
 
-def decode(addr, offset_size, index_size):
-    """
-    Decodes a raw address into a block address.
-        :param addr: address to be decoded
-        :param offset_size: number of bits used for the offset
-        :param index_size: number of bits used for the index
-        :returns: triple of tag, index and offset
-    """
-    # get offset with a bitmask then shift
-    offset = addr & pow(2, offset_size) - 1
-    addr = addr >> offset_size
-
-    # get index with a bitmask then shift
-    index = addr & pow(2, index_size) - 1
-    addr = addr >> index_size
-
-    # now only tag left
-    tag = addr
-
-    return tag, index, offset
-
-
 def main(filename=None, cache=None, **kwargs):
-    """"""
     with open(filename) as file:
         total, misses = set_associative(file, **kwargs)
-        print 'Total Miss Rate: {:.4%}'.format(sum(misses.values()) / float(sum(total.values())))
-        print 'Read Miss Rate: {:.4%}'.format(misses['R'] / float(total['R']))
-        print 'Write Miss Rate: {:.4%}'.format(misses['W'] / float(total['W']))
+        total_sum = sum(total.itervalues())
+        misses_sum = sum(misses.itervalues())
+        print('Total Miss Rate: {:.4%}'.format(misses_sum / float(total_sum)))
+        print('Read Miss Rate: {:.4%}'.format(misses['R'] / float(total['R'])))
+        print('Write Miss Rate: {:.4%}'.format(misses['W'] / float(total['W'])))
 
 
 if __name__ == '__main__':
