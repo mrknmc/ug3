@@ -1,8 +1,7 @@
 CAR Assignment 2 - s1140740
 ===================
 
-
-I was able to do all cache simulators completely.
+I was able to do the cache simulator completely.
 
 To run the program on DiCE, run:
 
@@ -21,7 +20,3 @@ You can also run:
     $ python2.7 cache.py -h
 
 to get the same information from the program.
-
-I also wrote a unit test for the `decode` function. To run it use
-
-    $ python2.7 tests.py
