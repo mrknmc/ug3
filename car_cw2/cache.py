@@ -6,10 +6,10 @@ from argparse import ArgumentParser
 from collections import deque
 
 
-def set_associative(file, size=4096, block=32, sets=1):
+def set_associative(file_, size=4096, block=32, sets=1):
     """
     Simulates a set-associative cache.
-        :param file: tracefile to be used for simulation.
+        :param file_: trace file to be used for simulation.
         :param size: size of the cache in bytes
         :param block: size of a block of memory in bytes.
         :param sets: set-associativity.
@@ -22,7 +22,7 @@ def set_associative(file, size=4096, block=32, sets=1):
     offset_size = int(log(block, 2))  # e.g. need 5 bits for 32 bytes
     index_size = int(log(size / block / float(sets), 2))
 
-    for op, tag, index, offset in parse(file, offset_size, index_size):
+    for op, tag, index, offset in parse(file_, offset_size, index_size):
         total[op] += 1
 
         if index not in cache:
@@ -42,10 +42,10 @@ def set_associative(file, size=4096, block=32, sets=1):
     return total, misses
 
 
-def parse(file, offset_size, index_size):
+def parse(file_, offset_size, index_size):
     """
     Generator that parses a given file.
-        :param file: file to parse.
+        :param file_: file to parse.
         :param offset_size: number of bits used for the offset.
         :param index_size: number of bits used for the index.
         :returns: quadruple of the operation (R|W), tag, index and offset.
@@ -53,7 +53,7 @@ def parse(file, offset_size, index_size):
     offset_mask = pow(2, offset_size) - 1
     index_mask = pow(2, index_size) - 1
 
-    for line in file:
+    for line in file_:
         op, addr = line.split()
         addr = int(addr, 16)
 
@@ -70,12 +70,12 @@ def parse(file, offset_size, index_size):
 
         yield op, tag, index, offset
 
-    file.seek(0)  # reset file pointer
+    file_.seek(0)  # reset file pointer
 
 
 def main(filename=None, cache=None, **kwargs):
-    with open(filename) as file:
-        total, misses = set_associative(file, **kwargs)
+    with open(filename) as file_:
+        total, misses = set_associative(file_, **kwargs)
         total_sum = sum(total.itervalues())
         misses_sum = sum(misses.itervalues())
         print('Total Miss Rate: {:.4%}'.format(misses_sum / float(total_sum)))
