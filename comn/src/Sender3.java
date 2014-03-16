@@ -16,8 +16,8 @@ public class Sender3 {
     private DatagramSocket socket;
     private FileInputStream inStream;
     private DatagramPacket[] sendPackets = new DatagramPacket[Short.MAX_VALUE];
-    private short nextSeqNum = 1;
-    private int base = 1;
+    private volatile short nextSeqNum = 1;
+    private volatile int base = 1;
 
     private volatile boolean listen = false;
     private volatile boolean done = false;
@@ -178,6 +178,10 @@ public class Sender3 {
      * Closes all of the running transactions etc.
      */
     public void close() throws IOException, InterruptedException {
+        while (base < nextSeqNum) {
+            // Wait until all packets are ACKed
+            Thread.yield();
+        }
         done = true;
         receiverThread.join();
         socket.close();
@@ -189,7 +193,7 @@ public class Sender3 {
      * @return size of a message of a packet.
      */
     public int getMsgSize() {
-        return MSG_SIZE - HEADER_SIZE;
+        return MSG_SIZE;
     }
 
     /**
@@ -197,7 +201,7 @@ public class Sender3 {
      * @return total size of a packet.
      */
     public int getTotalSize() {
-        return MSG_SIZE;
+        return MSG_SIZE + HEADER_SIZE;
     }
 
     /**
@@ -233,7 +237,7 @@ public class Sender3 {
     }
 
     private class SocketReceiver implements Runnable {
-
+        
         /**
          * Runs on a background thread listening for incoming
          * acknowledgement packets which are then sent to
