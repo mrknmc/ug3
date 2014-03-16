@@ -12,8 +12,7 @@ public class Receiver3 {
     private static final int HEADER_SIZE = 3;
     private DatagramSocket socket;
     private FileOutputStream outStream;
-    private int curACK = 0;
-    private int curSeq = -1;
+    private int expectedSeqNum = 1;
 
     /**
      * Constructs a Receiver1 object from the given properties.
@@ -125,13 +124,13 @@ public class Receiver3 {
     private int extractPacket(DatagramPacket packet, ByteBuffer dest) {
         dest.clear();
         byte[] data = packet.getData();
+        System.out.println(data.length);
+        System.out.println(packet.getLength());
         int sequence = ByteBuffer.wrap(new byte[]{0, 0, data[1], data[0]}).getInt();
         byte eof = data[2];
+        // take everything except for the header
         dest.put(data, HEADER_SIZE, packet.getLength() - HEADER_SIZE);
-        if (sequence == curSeq) {
-            return -2;
-        }
-        curSeq = sequence;
+        // return -1 on last packet
         return eof == 1 ? -1 : sequence;
     }
 
@@ -145,18 +144,21 @@ public class Receiver3 {
         ByteBuffer packetData = ByteBuffer.allocate(getMsgSize());
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
         int sequence;
+        int lastSeq = 0;
 
         do {
             socket.receive(packet);
             sequence = extractPacket(packet, packetData);
             System.out.printf("Received packet %d.\n", sequence);
-            if (sequence == curACK || sequence == -1) {
-                //
-                sendACK(packet);
+            if (sequence == expectedSeqNum || sequence == -1) {
+                // either in order or last
+                lastSeq = expectedSeqNum;
                 outStream.write(packetData.array());
-                curACK += 1;
+                expectedSeqNum += 1;
             }
+            sendACK(packet, lastSeq);
         } while (sequence != -1);
+        System.out.println("File received.");
     }
 
     /**
@@ -164,10 +166,10 @@ public class Receiver3 {
      *
      * @param receivedPacket packet we are acknowledging.
      */
-    private void sendACK(DatagramPacket receivedPacket) throws IOException {
-        DatagramPacket packet = makeACKPacket(receivedPacket);
+    private void sendACK(DatagramPacket receivedPacket, int seq) throws IOException {
+        DatagramPacket packet = makeACKPacket(receivedPacket, seq);
         socket.send(packet);
-        System.out.printf("Sent ACK %d.\n", curACK);
+        System.out.printf("Sent ACK %d.\n", seq);
     }
 
     /**
@@ -175,10 +177,10 @@ public class Receiver3 {
      * @param receivedPacket packet we are acknowledging.
      * @return acknowledgement packet to be sent to the sender.
      */
-    private DatagramPacket makeACKPacket(DatagramPacket receivedPacket) {
+    private DatagramPacket makeACKPacket(DatagramPacket receivedPacket, int seq) {
         ByteBuffer buffer = ByteBuffer.allocate(2);
-        byte[] byteExpectedSeqNum = intToBytes(curACK, 2);
-        buffer.put(byteExpectedSeqNum);
+        byte[] byteSeq = intToBytes(seq, 2);
+        buffer.put(byteSeq);
         return new DatagramPacket(buffer.array(), buffer.capacity(), receivedPacket.getAddress(), receivedPacket.getPort());
     }
 }

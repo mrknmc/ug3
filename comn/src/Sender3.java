@@ -16,8 +16,8 @@ public class Sender3 {
     private DatagramSocket socket;
     private FileInputStream inStream;
     private DatagramPacket[] sendPackets = new DatagramPacket[Short.MAX_VALUE];
-    private short nextSeqNum = 0;
-    private int base = 0;
+    private short nextSeqNum = 1;
+    private int base = 1;
 
     private volatile boolean listen = false;
     private volatile boolean done = false;
@@ -113,7 +113,7 @@ public class Sender3 {
         int size = inStream.read(byteArray);
         int nextSize;
         boolean fileRead = size == -1;
-        int counter = 0;
+        int counter = 1;
 
         while (!fileRead) {
             nextSize = inStream.read(nextByteArray);
@@ -125,8 +125,7 @@ public class Sender3 {
             size = nextSize;
             byteArray = nextByteArray;
         }
-        while (base + 1 < nextSeqNum) {
-        }
+        System.out.println("File sent.");
     }
 
     /**
