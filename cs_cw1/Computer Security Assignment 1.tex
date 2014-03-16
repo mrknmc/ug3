@@ -1,0 +1,583 @@
+
+% Default to the notebook output style
+
+    
+
+
+% Inherit from the specified cell style.
+
+
+
+
+    
+\documentclass{article}
+
+    
+    
+    \usepackage{graphicx} % Used to insert images
+    \usepackage{adjustbox} % Used to constrain images to a maximum size 
+    \usepackage{color} % Allow colors to be defined
+    \usepackage{enumerate} % Needed for markdown enumerations to work
+    \usepackage{geometry} % Used to adjust the document margins
+    \usepackage{amsmath} % Equations
+    \usepackage{amssymb} % Equations
+    \usepackage[mathletters]{ucs} % Extended unicode (utf-8) support
+    \usepackage[utf8x]{inputenc} % Allow utf-8 characters in the tex document
+    \usepackage{fancyvrb} % verbatim replacement that allows latex
+    \usepackage{grffile} % extends the file name processing of package graphics 
+                         % to support a larger range 
+    % The hyperref package gives us a pdf with properly built
+    % internal navigation ('pdf bookmarks' for the table of contents,
+    % internal cross-reference links, web links for URLs, etc.)
+    \usepackage{hyperref}
+    \usepackage{longtable} % longtable support required by pandoc >1.10
+    
+
+    
+    
+    \definecolor{orange}{cmyk}{0,0.4,0.8,0.2}
+    \definecolor{darkorange}{rgb}{.71,0.21,0.01}
+    \definecolor{darkgreen}{rgb}{.12,.54,.11}
+    \definecolor{myteal}{rgb}{.26, .44, .56}
+    \definecolor{gray}{gray}{0.45}
+    \definecolor{lightgray}{gray}{.95}
+    \definecolor{mediumgray}{gray}{.8}
+    \definecolor{inputbackground}{rgb}{.95, .95, .85}
+    \definecolor{outputbackground}{rgb}{.95, .95, .95}
+    \definecolor{traceback}{rgb}{1, .95, .95}
+    % ansi colors
+    \definecolor{red}{rgb}{.6,0,0}
+    \definecolor{green}{rgb}{0,.65,0}
+    \definecolor{brown}{rgb}{0.6,0.6,0}
+    \definecolor{blue}{rgb}{0,.145,.698}
+    \definecolor{purple}{rgb}{.698,.145,.698}
+    \definecolor{cyan}{rgb}{0,.698,.698}
+    \definecolor{lightgray}{gray}{0.5}
+    
+    % bright ansi colors
+    \definecolor{darkgray}{gray}{0.25}
+    \definecolor{lightred}{rgb}{1.0,0.39,0.28}
+    \definecolor{lightgreen}{rgb}{0.48,0.99,0.0}
+    \definecolor{lightblue}{rgb}{0.53,0.81,0.92}
+    \definecolor{lightpurple}{rgb}{0.87,0.63,0.87}
+    \definecolor{lightcyan}{rgb}{0.5,1.0,0.83}
+    
+    % commands and environments needed by pandoc snippets
+    % extracted from the output of `pandoc -s`
+    
+    \DefineShortVerb[commandchars=\\\{\}]{\|}
+    \DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+    % Add ',fontsize=\small' for more characters per line
+    \newenvironment{Shaded}{}{}
+    \newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{{#1}}}}
+    \newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{{#1}}}
+    \newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{{#1}}}}
+    \newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{{#1}}}
+    \newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+    \newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{{#1}}}
+    \newcommand{\RegionMarkerTok}[1]{{#1}}
+    \newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+    \newcommand{\NormalTok}[1]{{#1}}
+    
+    % Define a nice break command that doesn't care if a line doesn't already
+    % exist.
+    \def\br{\hspace*{\fill} \\* }
+    % Math Jax compatability definitions
+    \def\gt{>}
+    \def\lt{<}
+    % Document parameters
+    \title{Computer Security Assignment 1}
+    
+    
+    
+
+    % Pygments definitions
+    
+\makeatletter
+\def\PY@reset{\let\PY@it=\relax \let\PY@bf=\relax%
+    \let\PY@ul=\relax \let\PY@tc=\relax%
+    \let\PY@bc=\relax \let\PY@ff=\relax}
+\def\PY@tok#1{\csname PY@tok@#1\endcsname}
+\def\PY@toks#1+{\ifx\relax#1\empty\else%
+    \PY@tok{#1}\expandafter\PY@toks\fi}
+\def\PY@do#1{\PY@bc{\PY@tc{\PY@ul{%
+    \PY@it{\PY@bf{\PY@ff{#1}}}}}}}
+\def\PY#1#2{\PY@reset\PY@toks#1+\relax+\PY@do{#2}}
+
+\expandafter\def\csname PY@tok@gd\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.63,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@gu\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.50,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@gt\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.27,0.87}{##1}}}
+\expandafter\def\csname PY@tok@gs\endcsname{\let\PY@bf=\textbf}
+\expandafter\def\csname PY@tok@gr\endcsname{\def\PY@tc##1{\textcolor[rgb]{1.00,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@cm\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@vg\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@m\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@mh\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@go\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.53,0.53,0.53}{##1}}}
+\expandafter\def\csname PY@tok@ge\endcsname{\let\PY@it=\textit}
+\expandafter\def\csname PY@tok@vc\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@il\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@cs\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@cp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.74,0.48,0.00}{##1}}}
+\expandafter\def\csname PY@tok@gi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.63,0.00}{##1}}}
+\expandafter\def\csname PY@tok@gh\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@ni\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.60,0.60,0.60}{##1}}}
+\expandafter\def\csname PY@tok@nl\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.63,0.63,0.00}{##1}}}
+\expandafter\def\csname PY@tok@nn\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@no\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.53,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@na\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.49,0.56,0.16}{##1}}}
+\expandafter\def\csname PY@tok@nb\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@nc\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@nd\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.67,0.13,1.00}{##1}}}
+\expandafter\def\csname PY@tok@ne\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.82,0.25,0.23}{##1}}}
+\expandafter\def\csname PY@tok@nf\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@si\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.53}{##1}}}
+\expandafter\def\csname PY@tok@s2\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@vi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@nt\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@nv\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@s1\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sh\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sc\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sx\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@bp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@c1\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@kc\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@c\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@mf\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@err\endcsname{\def\PY@bc##1{\setlength{\fboxsep}{0pt}\fcolorbox[rgb]{1.00,0.00,0.00}{1,1,1}{\strut ##1}}}
+\expandafter\def\csname PY@tok@kd\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@ss\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@sr\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.53}{##1}}}
+\expandafter\def\csname PY@tok@mo\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@kn\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@mi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@gp\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@o\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@kr\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@s\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@kp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@w\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.73,0.73}{##1}}}
+\expandafter\def\csname PY@tok@kt\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.69,0.00,0.25}{##1}}}
+\expandafter\def\csname PY@tok@ow\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.67,0.13,1.00}{##1}}}
+\expandafter\def\csname PY@tok@sb\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@k\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@se\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sd\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+
+\def\PYZbs{\char`\\}
+\def\PYZus{\char`\_}
+\def\PYZob{\char`\{}
+\def\PYZcb{\char`\}}
+\def\PYZca{\char`\^}
+\def\PYZam{\char`\&}
+\def\PYZlt{\char`\<}
+\def\PYZgt{\char`\>}
+\def\PYZsh{\char`\#}
+\def\PYZpc{\char`\%}
+\def\PYZdl{\char`\$}
+\def\PYZhy{\char`\-}
+\def\PYZsq{\char`\'}
+\def\PYZdq{\char`\"}
+\def\PYZti{\char`\~}
+% for compatibility with earlier versions
+\def\PYZat{@}
+\def\PYZlb{[}
+\def\PYZrb{]}
+\makeatother
+
+
+    % Exact colors from NB
+    \definecolor{incolor}{rgb}{0.0, 0.0, 0.5}
+    \definecolor{outcolor}{rgb}{0.545, 0.0, 0.0}
+
+
+
+    
+    % Prevent overflowing lines due to hard-to-break entities
+    \sloppy 
+    % Setup hyperref package
+    \hypersetup{
+      breaklinks=true,  % so long urls are correctly broken across lines
+      colorlinks=true,
+      urlcolor=blue,
+      linkcolor=darkorange,
+      citecolor=darkgreen,
+      }
+    % Slightly bigger margins than the latex defaults
+    
+    \geometry{verbose,tmargin=1in,bmargin=1in,lmargin=1in,rmargin=1in}
+    
+    
+
+    \begin{document}
+    
+    
+    \maketitle
+    
+    
+
+    
+    \section{Computer Security Assignment
+1}\label{computer-security-assignment-1}
+
+\subsection{Exercise 1}\label{exercise-1}
+
+\subsubsection{a)}\label{a}
+
+We use the Python library gmpy to verify the requirements for the
+ElGamal algorithm.
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}31}]:} \PY{k+kn}{import} \PY{n+nn}{gmpy}
+         \PY{n}{p} \PY{o}{=} \PY{n}{gmpy}\PY{o}{.}\PY{n}{mpz}\PY{p}{(}\PY{l+m+mi}{63689}\PY{p}{)}
+         \PY{n}{g} \PY{o}{=} \PY{n}{gmpy}\PY{o}{.}\PY{n}{mpz}\PY{p}{(}\PY{l+m+mi}{14569}\PY{p}{)}
+         \PY{n}{k} \PY{o}{=} \PY{n}{gmpy}\PY{o}{.}\PY{n}{mpz}\PY{p}{(}\PY{l+m+mi}{11636}\PY{p}{)}
+\end{Verbatim}
+
+    \textbf{Requirements:}
+
+\textbf{1.} Number \texttt{p} needs to be prime. gmpy has a function
+\texttt{is\_prime} which returns 2 when its argument is prime. Since
+\texttt{p} is prime, its greatest common divisor with \texttt{g} is
+clearly 1.
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}15}]:} \PY{l+m+mi}{2} \PY{o}{==} \PY{n}{gmpy}\PY{o}{.}\PY{n}{is\PYZus{}prime}\PY{p}{(}\PY{n}{p}\PY{p}{)} \PY{o}{\PYZam{}}\PY{o}{\PYZam{}} \PY{l+m+mi}{1} \PY{o}{==} \PY{n}{gmpy}\PY{o}{.}\PY{n}{gcd}\PY{p}{(}\PY{n}{p}\PY{p}{,} \PY{n}{g}\PY{p}{)}
+\end{Verbatim}
+
+            \begin{Verbatim}[commandchars=\\\{\}]
+{\color{outcolor}Out[{\color{outcolor}15}]:} True
+\end{Verbatim}
+        
+    \textbf{2.} Number \texttt{g} needs to be a generator. Thus it must be a
+member of the cyclic group $(Z_p)^*$ which in this case contains all the
+numbers from 2 smaller than \texttt{p} because \texttt{p} is prime.
+Moreover, it must be able to generate all of the numbers in this cyclic
+group when raised to the power of each of the elements in $(Z_p)^*$ up
+to $p - 2$. Therefore, the set generated by \texttt{g} and the set of
+numbers from 1 to \texttt{p} - 1 should be equal:
+$\{g^1, g^2, ..., g^{p-2}\} = \{1, 2, ..., p - 1\}$.
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}36}]:} \PY{n}{g} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{,} \PY{n}{p}\PY{p}{)} \PY{o+ow}{and} \PY{n+nb}{set}\PY{p}{(}\PY{n+nb}{pow}\PY{p}{(}\PY{n}{g}\PY{p}{,} \PY{n}{i}\PY{p}{,} \PY{n}{p}\PY{p}{)} \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{,} \PY{n}{p} \PY{o}{\PYZhy{}} \PY{l+m+mi}{1}\PY{p}{)}\PY{p}{)} \PY{o}{==} \PY{n+nb}{set}\PY{p}{(}\PY{n+nb}{range}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{,} \PY{n}{p}\PY{p}{)}\PY{p}{)}
+\end{Verbatim}
+
+            \begin{Verbatim}[commandchars=\\\{\}]
+{\color{outcolor}Out[{\color{outcolor}36}]:} True
+\end{Verbatim}
+        
+    \textbf{3.} Furthermore, the private key \texttt{k} needs to be from the
+set $\{1, ..., p - 2\}$.
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}33}]:} \PY{n}{k} \PY{o}{\PYZlt{}} \PY{n}{p} \PY{o}{\PYZhy{}} \PY{l+m+mi}{1}
+\end{Verbatim}
+
+            \begin{Verbatim}[commandchars=\\\{\}]
+{\color{outcolor}Out[{\color{outcolor}33}]:} True
+\end{Verbatim}
+        
+    \subsubsection{b)}\label{b}
+
+To find the decryption of the ciphertext we use \texttt{gmpy} again.
+Firstly, we are given the results of encryption: $c_1$ and $c_2$.
+Secondly, to decrypt we use the decryption formula from the ElGamal
+algorithm:
+
+$D_{EG} = c_1^{-k} \cdot c_2 \pmod{p}$:
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}34}]:} \PY{n}{c1}\PY{p}{,} \PY{n}{c2} \PY{o}{=} \PY{l+m+mi}{7265}\PY{p}{,} \PY{l+m+mi}{44824}
+         \PY{n+nb}{pow}\PY{p}{(}\PY{n}{c1}\PY{p}{,} \PY{n}{p} \PY{o}{\PYZhy{}} \PY{n}{k} \PY{o}{\PYZhy{}} \PY{l+m+mi}{1}\PY{p}{)} \PY{o}{*} \PY{n}{c2} \PY{o}{\PYZpc{}} \PY{n}{p}
+\end{Verbatim}
+
+            \begin{Verbatim}[commandchars=\\\{\}]
+{\color{outcolor}Out[{\color{outcolor}34}]:} mpz(2014)
+\end{Verbatim}
+        
+    \subsection{Exercise 2}\label{exercise-2}
+
+\subsubsection{a)}\label{a}
+
+We could use a key $k$ of length at least as long as the message. Then
+for each block $m_i$ of the message we would use a corresponding block
+$k_i$ of the same size as $m_i$ from key $k$.
+
+\subsubsection{b)}\label{b}
+
+\begin{itemize}
+\item
+  Raw RSA does not satisfy this property. It is because RSA is
+  deterministic, hence whenever we encrypt a message \texttt{m} with the
+  same public key \texttt{pk} we always get the same ciphertext
+  \texttt{c}. This is what the attacker could check for both messages
+  and confirm which one encrypts to the ciphertext.
+\item
+  ElGamal does satisfy the property. It uses a random number \texttt{r}
+  from each of the participants, hence the same message does not always
+  encrypt to the same ciphertext. Furthermore, since we are using
+  randomness, a message \texttt{m} can be encrypted to ciphertext
+  \texttt{c} if we select the right random number \texttt{r}.
+\end{itemize}
+
+\subsubsection{c)}\label{c}
+
+To show that ElGamal is malleable, we take $e$, $c_1$ which were
+generated in encryption phase of ElGamal for message $m_1$. Now we can
+apply the function $f(x) = 2x$ to $c_1$ so that we get:
+
+$c_2 = f(c_1) = 2 \cdot m \cdot (g^d)^r \pmod{p}$.
+
+Now, we send the tuple $e$, $c_2$ and when that is decrypted the message
+$m_2$ is received instead of $m_1$:
+
+\[ e^{-d} \cdot c_2 \pmod{p} = (g^r)^{-d} \cdot 2 \cdot m \cdot (g^d)^r \pmod{p} = 2 \cdot m \pmod{p}\]
+
+\subsubsection{d)}\label{d}
+
+Ciphertexts are rejected when the $k_1$ least significant bits of the
+decrypted message $m$ are not equal to $0^{k_1}$, where $k_1$ is the
+number of zeros that were padded to the end of message $m$ in the
+encryption stage.
+
+    \subsection{Exercise 3}\label{exercise-3}
+
+\subsubsection{a)}\label{a}
+
+We use a variant of Lowe's attack where \texttt{M} is the malicious user
+who manages to convince \texttt{B} that he is \texttt{A}. This attack is
+only possible if \texttt{A} tries to participate in this protocol with
+\texttt{M}:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Let's say that \texttt{A} generates key \texttt{K} for communication
+  with \texttt{M}.
+\item
+  After that \texttt{M} initiates an exchange with \texttt{B} with
+  \texttt{A}'s identity and re-using the key \texttt{K} generated by
+  \texttt{A} which \texttt{M} can read because it was encrypted by
+  \texttt{M}'s public key.
+\item
+  Now, \texttt{B} generates a nonce \texttt{N} and sends it encrypted
+  with key \texttt{K} to \texttt{M}.
+\item
+  \texttt{M} passes \texttt{N} encrypted with \texttt{K} to \texttt{A}
+  who responds with his certificate and signed nonce \texttt{N} all
+  encrypted with \texttt{K}.
+\item
+  Now, \texttt{M} only needs to pass this along to \texttt{B} for
+  \texttt{B} to think that it is authenticating with \texttt{A} instead
+  of \texttt{M}.
+\item
+  After the last step, all communication between \texttt{M} and
+  \texttt{B} is encrypted with key \texttt{K} with \texttt{B} thinking
+  that it is talking to \texttt{A} and \texttt{M} being able to decrypt
+  the messages.
+\end{enumerate}
+
+The attack is described on the diagram below:
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}3}]:} \PY{n}{Image}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{lowe\PYZus{}attack.png}\PY{l+s}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\texttt{\color{outcolor}Out[{\color{outcolor}3}]:}
+    
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{Computer Security Assignment 1_files/Computer Security Assignment 1_12_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+
+    \subsubsection{b)}\label{b}
+
+We could fix this issue by adding in \texttt{B}'s (the receiver's)
+identity in the last step of the protocol so that \texttt{A} sends
+\texttt{B} $senc(K, Cert_A \vert \vert sign(pvk(A), <N, B>))$. Thus
+\texttt{M} would not be able to send this message along to \texttt{B}
+pretending to be \texttt{A} because it would be his identity included in
+the signature as a receiver and not \texttt{B}'s identity.
+
+Furthermore, \texttt{M} would not be able to change it to \texttt{B}'s
+identity since the signature is signed by the private key of \texttt{A}.
+
+    \pagebreak
+
+    \subsection{Exercise 4}\label{exercise-4}
+
+\subsubsection{a)}\label{a}
+
+\textbf{Properties}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Both participants get an equal say in what the resulting number should
+  be. Thus none of them is able to force it (as required).
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    My protocol achieves this by getting a random number from both
+    participants and XOR-ing it together to form a new number. There is
+    no way for any of the participants to force some number because they
+    will not know what number the other person has chosen until they
+    commit to a number themselves.
+  \end{itemize}
+\item
+  The participants should not be able to change the number they
+  generated based on the other participant's number.
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    My protocol achieves this by forcing the players to commit to the
+    hashes of their numbers. Thus the participants are not able to
+    change their numbers after they reveal their hashes because the
+    number would not hash to the same hash (we use a collision-resistant
+    function for hashing). Furthermore, they are not able to deduce what
+    number the other participant generated before they commit to their
+    number because the hashing function is one-way.
+  \end{itemize}
+\end{itemize}
+
+\textbf{Requirements}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  The participants have agreed on a CRF hash function $H(x)$ beforehand
+  which they can use to verify that the other participant's hash
+  corresponds to their number.
+\item
+  The participants are able to hash the number they generated with
+  $H(x)$ and are able to verify other players' hashes.
+\end{itemize}
+
+\textbf{Assumptions}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  The randomly generated number does not need to be secret so the
+  players do not mind an attacker eavesdropping.
+\item
+  The phones are tamper-free and the Man in the Middle attack is not
+  possible. Otherwise, the attacker could pretend to be the other
+  participant to both of the participants and generate a random number
+  that he wants.
+\end{itemize}
+
+\textbf{Protocol Steps}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Both participants choose a random number.
+\item
+  They hash this number with a CRF hash function $H(x)$.
+\item
+  Both participants reveal these hashes and commit to them.
+\item
+  Afterwards, they reveal their random numbers.
+\item
+  Both of the participants can check that the random number of the other
+  participant hashes to the commited value using the function $H(x)$.
+\item
+  The random numbers are XOR-ed together to form a new randomly
+  generated number.
+\end{enumerate}
+
+    \subsubsection{b)}\label{b}
+
+\textbf{Properties}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  The participants should not be able to change the hand-signs they want
+  to play based on the other participant's hand-sign.
+
+  \begin{itemize}
+  \itemsep1pt\parskip0pt\parsep0pt
+  \item
+    My protocol achieves this by forcing the players to commit to the
+    hashes of their hand-signs padded with a random number. Thus the
+    participants are not able to change their hand-signs or random
+    numbers after they reveal their hashes because they would not hash
+    to the same hash (we use a collision-resistant function for
+    hashing). Furthermore, they are not able to deduce what hand-sign
+    the other participant played before they commit to their hand-sign
+    because the hashing function is one-way and the other participant
+    used an unknown random number to pad the value of their hand-sign
+    before hashing.
+  \end{itemize}
+\end{itemize}
+
+\textbf{Requirements}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  The participants have agreed on a CRF hash function $H(x)$ beforehand
+  which they can use to verify that the other participant's hash
+  corresponds to their number.
+\item
+  The participants have agreed on how they are going to perform the
+  padding.
+\item
+  The participants are able to hash the number they generated with
+  $H(x)$ and are able to verify other players' hashes.
+\end{itemize}
+
+\textbf{Assumptions}
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  The game is played on a secure channel so that an attacker cannot
+  change players' hand-signs.
+\item
+  The hand-signs do not need to be secret so that if an attacker is
+  eavesdropping it has no unwanted consequences.
+\end{itemize}
+
+\textbf{Protocol Steps}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Each participant chooses what hand-sign they are going to play.
+\item
+  They add some padding to the value of the hand-sign using a randomly
+  generated number.
+\item
+  They hash the padded value with a CRF $H(x)$ and reveal the hash -
+  commiting to it.
+\item
+  Afterwards, they reveal their randomly generated number and their
+  hand-sign - commiting to it.
+\item
+  After that, the players are able to verify each other's hand-sign by
+  padding the hand-sign with the randomly generated number and hashing
+  it using $H(x)$.
+\item
+  After that, all the hand-signs are verified and we can play the round.
+\end{enumerate}
+
+
+    % Add a bibliography block to the postdoc
+    
+    
+    
+    \end{document}
