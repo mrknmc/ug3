@@ -190,6 +190,7 @@ public class Sender3 {
 
     /**
      * Returns the message size of a packet.
+     *
      * @return size of a message of a packet.
      */
     public int getMsgSize() {
@@ -198,6 +199,7 @@ public class Sender3 {
 
     /**
      * Returns the total size of a packet.
+     *
      * @return total size of a packet.
      */
     public int getTotalSize() {
@@ -225,6 +227,7 @@ public class Sender3 {
 
     /**
      * Receives an acknowledgement packet.
+     *
      * @param packet packet that was received.
      */
     private synchronized void receivePacket(DatagramPacket packet) {
@@ -237,7 +240,7 @@ public class Sender3 {
     }
 
     private class SocketReceiver implements Runnable {
-        
+
         /**
          * Runs on a background thread listening for incoming
          * acknowledgement packets which are then sent to

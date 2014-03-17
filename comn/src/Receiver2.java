@@ -13,7 +13,6 @@ public class Receiver2 {
     private DatagramSocket socket;
     private FileOutputStream outStream;
     private int curACK = 0;
-    private int curSeq = -1;
 
     /**
      * Constructs a Receiver1 object from the given properties.
@@ -125,10 +124,6 @@ public class Receiver2 {
         int sequence = ByteBuffer.wrap(new byte[]{0, 0, data[1], data[0]}).getInt();
         byte eof = data[2];
         dest.put(data, HEADER_SIZE, packet.getLength() - HEADER_SIZE);
-        if (sequence == curSeq) {
-            return -2;
-        }
-        curSeq = sequence;
         return eof == 1 ? -1 : sequence;
     }
 
@@ -147,13 +142,15 @@ public class Receiver2 {
             socket.receive(packet);
             sequence = extractPacket(packet, packetData);
             System.out.printf("Received packet %d.\n", sequence);
-            if (sequence == -2) {
-                // Repeated packet
-                System.out.printf("Received duplicate packet %d.\n", sequence);
-            } else {
+            if (sequence == curACK || sequence == -1) {
+                // Expected or last packet
                 sendACK(packet);
                 curACK = curACK == 0 ? 1 : 0;
                 outStream.write(packetData.array());
+            } else {
+                // Repeated packet
+                System.out.println("Received a duplicate packet.\n");
+                sendACK(packet);
             }
         } while (sequence != -1);
     }

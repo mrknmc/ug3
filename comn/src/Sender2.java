@@ -12,12 +12,23 @@ import java.nio.ByteBuffer;
 public class Sender2 {
     public static final int MSG_SIZE = 1024;
     public static final int HEADER_SIZE = 3;
-    public static final int DEFAULT_TIMEOUT = 2000;
+    public static final int DEFAULT_TIMEOUT = 40;
+    private static int timeout = DEFAULT_TIMEOUT;
     private InetAddress address;
     private int port;
     private DatagramSocket socket;
     private FileInputStream inStream;
     private int curACK = 0;
+    private int retransmissions = 0;
+
+    /**
+     * Constructs a Sender1 object with properties encoded in an array of Strings;
+     *
+     * @param args arguments of the Sender1
+     */
+    public Sender2(String[] args) throws IOException {
+        this(args[0], Integer.parseInt(args[1]), args[2]);
+    }
 
     /**
      * Constructs a Sender1 object with given properties.
@@ -31,26 +42,29 @@ public class Sender2 {
         this.port = port;
         this.socket = new DatagramSocket();
         this.inStream = new FileInputStream(fileName);
-    }
-
-    /**
-     * Constructs a Sender1 object with properties encoded in an array of Strings;
-     *
-     * @param args arguments of the Sender1
-     */
-    public Sender2(String[] args) throws IOException {
-        this(args[0], Integer.parseInt(args[1]), args[2]);
+        this.socket.setSoTimeout(timeout);
     }
 
     public static void main(String[] args) throws IOException {
         if (!validateArgs(args)) {
             System.exit(1);
         }
+
+        if (args.length >= 4) {
+            Sender2.timeout = Integer.parseInt(args[3]);
+        }
+
+        long time, size;
+
         Sender2 sender = null;
         try {
             sender = new Sender2(args);
+            size = sender.inStream.getChannel().size();
+            time = System.currentTimeMillis();
             sender.send();
-            System.out.println("File sent.");
+            time = System.currentTimeMillis() - time;
+            //System.out.println("File sent.");
+            System.out.printf("%d, %f\n", sender.retransmissions, size / (double) time);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -58,21 +72,6 @@ public class Sender2 {
                 sender.close();
             }
         }
-    }
-
-    /**
-     * Converts an int into a specified number of bytes
-     *
-     * @param value      integer value to convert
-     * @param numOfBytes how many bytes to use for the int
-     * @return int converted into a byte array
-     */
-    public static byte[] intToBytes(int value, int numOfBytes) {
-        byte[] byteArray = new byte[numOfBytes];
-        for (int i = 0; i < numOfBytes; i++) {
-            byteArray[i] = (byte) ((value >> 8 * i) & 0xFF);
-        }
-        return byteArray;
     }
 
     /**
@@ -96,6 +95,21 @@ public class Sender2 {
     }
 
     /**
+     * Converts an int into a specified number of bytes
+     *
+     * @param value      integer value to convert
+     * @param numOfBytes how many bytes to use for the int
+     * @return int converted into a byte array
+     */
+    public static byte[] intToBytes(int value, int numOfBytes) {
+        byte[] byteArray = new byte[numOfBytes];
+        for (int i = 0; i < numOfBytes; i++) {
+            byteArray[i] = (byte) ((value >> 8 * i) & 0xFF);
+        }
+        return byteArray;
+    }
+
+    /**
      * Reads a file and sends packets to the receiver.
      *
      * @throws IOException
@@ -107,30 +121,20 @@ public class Sender2 {
         int size = inStream.read(byteArray);
         int nextSize;
         boolean fileRead = size == -1;
-        int counter = 0;
 
         while (!fileRead) {
             nextSize = inStream.read(nextByteArray);
             fileRead = nextSize == -1;
-            packet = makePacket(byteArray, counter, size, fileRead);
-            System.out.printf("Sent packet %d\n", counter);
-            sendPacket(packet);
-            counter++;
+            packet = makePacket(byteArray, curACK, size, fileRead);
+            sendPacket(packet, curACK);
             size = nextSize;
             byteArray = nextByteArray;
         }
     }
 
     /**
-     * Closes all of the running transactions etc.
-     */
-    public void close() throws IOException {
-        socket.close();
-        inStream.close();
-    }
-
-    /**
      * Returns the message size of a packet.
+     *
      * @return size of a message of a packet.
      */
     public int getMsgSize() {
@@ -138,49 +142,44 @@ public class Sender2 {
     }
 
     /**
-     * Returns the total size of a packet.
-     * @return total size of a packet.
+     * Send an individual packet.
+     *
+     * @param packet packet to be sent
+     * @param ack    number to wait for
+     * @throws IOException
      */
-    public int getTotalSize() {
-        return MSG_SIZE + HEADER_SIZE;
+    private void sendPacket(DatagramPacket packet, int ack) throws IOException {
+        while (true) {
+            try {
+                socket.send(packet);
+                System.out.printf("Sent packet %d\n", ack);
+                waitForACK(timeout, ack);
+                break;
+            } catch (SocketTimeoutException e) {
+                retransmissions += 1;
+                System.out.printf("Timed out waiting for ACK %d\n", ack);
+            }
+        }
     }
 
     /**
      * Waits until it gets acknowledgement from the receiver.
      *
      * @param timeout timeout in milliseconds.
+     * @param ack     number to wait for
      * @throws IOException
      */
-    private int waitForACK(int timeout) throws IOException {
+    private int waitForACK(int timeout, int ack) throws IOException {
         byte[] buf = new byte[1];
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
-        socket.setSoTimeout(timeout);
 
         while (true) {
             socket.receive(packet);
             int recACK = (int) packet.getData()[0];
-            if (recACK == curACK) {
+            if (recACK == ack) {
                 System.out.printf("Received ACK %d\n", recACK);
-                curACK = curACK == 0 ? 1 : 0;
+                curACK = (curACK + 1) % 2;
                 return recACK;
-            }
-        }
-    }
-
-    /**
-     * Send an individual packet.
-     *
-     * @param packet packet to be sent
-     * @throws IOException
-     */
-    private void sendPacket(DatagramPacket packet) throws IOException {
-        while (true) {
-            try {
-                socket.send(packet);
-                waitForACK(DEFAULT_TIMEOUT);
-                break;
-            } catch (SocketTimeoutException e) {
-                System.out.printf("Timed out waiting for ACK %d\n", curACK);
             }
         }
     }
@@ -192,16 +191,35 @@ public class Sender2 {
      * @param data     message data that we are sending.
      * @param sequence sequence number sent in the header.
      * @param size     size of the data to be sent
+     * @param fileRead whether this is the last packet
      * @return packet to be sent to the receiver.
      */
     private DatagramPacket makePacket(byte[] data, int sequence, int size, boolean fileRead) {
         ByteBuffer buffer = ByteBuffer.allocate(getTotalSize());
         byte eof = fileRead ? (byte) 1 : (byte) 0;
+        // convert sequence to either 0 or 1
         byte[] byteSequence = intToBytes(sequence, 2);
         buffer.put(byteSequence);
         buffer.put(eof);
         buffer.put(data, 0, size);
         return new DatagramPacket(buffer.array(), 0, buffer.position(), address, port);
+    }
+
+    /**
+     * Returns the total size of a packet.
+     *
+     * @return total size of a packet.
+     */
+    public int getTotalSize() {
+        return MSG_SIZE + HEADER_SIZE;
+    }
+
+    /**
+     * Closes all of the running transactions etc.
+     */
+    public void close() throws IOException {
+        socket.close();
+        inStream.close();
     }
 
 }
