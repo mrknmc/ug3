@@ -3,12 +3,12 @@
 # Question 1
 # 10% packet loss rate 10Mbps bandwidth and 10ms delay
 
-ipfw flush
-ipfw add pipe 100 in
-ipfw add pipe 200 out
+ipfw -f flush > /dev/null
+ipfw add pipe 100 in > /dev/null
+ipfw add pipe 200 out > /dev/null
 
-ipfw pipe 100 config delay 10ms plr 0.05 bw 10Mbits/s
-ipfw pipe 200 config delay 10ms plr 0.05 bw 10Mbits/s
+ipfw pipe 100 config delay 10ms plr 0.05 bw 10Mbits/s > /dev/null
+ipfw pipe 200 config delay 10ms plr 0.05 bw 10Mbits/s > /dev/null
 
 echo timeout, retransmission, throughput
 
@@ -21,19 +21,21 @@ do
         wait
 done
 
+echo
+
 # Question 3
 # 1% packet loss rate 10Mbps bandwith and variable delay
 
 echo window, delay, throughput
 
-ipfw flush
-ipfw add pipe 100 in
-ipfw add pipe 200 out
+ipfw - flush > /dev/null
+ipfw add pipe 100 in > /dev/null
+ipfw add pipe 200 out > /dev/null
 
 for DELAY in 10 100 300
 do
-        ipfw pipe 100 config delay ${DELAY}ms plr 0.005 bw 10Mbits/s
-        ipfw pipe 200 config delay ${DELAY}ms plr 0.005 bw 10Mbits/s
+        ipfw pipe 100 config delay ${DELAY}ms plr 0.005 bw 10Mbits/s > /dev/null
+        ipfw pipe 200 config delay ${DELAY}ms plr 0.005 bw 10Mbits/s > /dev/null
 
         # loop through windows
         for WINDOW in 1 2 4 8 16 32 64 128 256
@@ -48,12 +50,12 @@ done
 # Question 5
 # 1% packet loss rate 10Mbps bandwidth and 100ms delay
 
-ipfw flush
-ipfw add pipe 100 in
-ipfw add pipe 200 out
+ipfw -f flush > /dev/null
+ipfw add pipe 100 in > /dev/null
+ipfw add pipe 200 out > /dev/null
 
-ipfw pipe 100 config delay 100ms plr 0.005 bw 10Mbits/s
-ipfw pipe 200 config delay 100ms plr 0.005 bw 10Mbits/s
+ipfw pipe 100 config delay 100ms plr 0.005 bw 10Mbits/s > /dev/null
+ipfw pipe 200 config delay 100ms plr 0.005 bw 10Mbits/s > /dev/null
 
 echo window, throughput
 
