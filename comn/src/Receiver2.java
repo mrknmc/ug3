@@ -162,8 +162,9 @@ public class Receiver2 {
      * @return packet to be sent as acknowledgement
      */
     private DatagramPacket makeACKPacket(DatagramPacket receivedPacket) {
-        byte[] data = {(byte) curACK};
-        return new DatagramPacket(data, data.length, receivedPacket.getAddress(), receivedPacket.getPort());
+        ByteBuffer buf = ByteBuffer.allocate(2);
+        buf.put(receivedPacket.getData(), 0, 2);
+        return new DatagramPacket(buf.array(), buf.capacity(), receivedPacket.getAddress(), receivedPacket.getPort());
     }
 
 }
