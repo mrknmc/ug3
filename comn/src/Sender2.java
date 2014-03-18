@@ -13,7 +13,7 @@ public class Sender2 {
     public static final int MSG_SIZE = 1024;
     public static final int HEADER_SIZE = 3;
     public static final int DEFAULT_TIMEOUT = 40;
-    private static int timeout = DEFAULT_TIMEOUT;
+    private static long timeout = DEFAULT_TIMEOUT;
     private InetAddress address;
     private int port;
     private DatagramSocket socket;
@@ -42,7 +42,7 @@ public class Sender2 {
         this.port = port;
         this.socket = new DatagramSocket();
         this.inStream = new FileInputStream(fileName);
-        this.socket.setSoTimeout(timeout);
+        //this.socket.setSoTimeout(timeout);
     }
 
     public static void main(String[] args) throws IOException {
@@ -149,14 +149,35 @@ public class Sender2 {
      * @throws IOException
      */
     private void sendPacket(DatagramPacket packet, int ack) throws IOException {
+        byte[] buf = new byte[1];
+        DatagramPacket ackPacket = new DatagramPacket(buf, buf.length);
+        long timer = timeout;
+        long startTime;
+        socket.send(packet);
+
         while (true) {
+            System.out.printf("Sent packet %d\n", ack);
+            socket.setSoTimeout((int) timer);
+            startTime = System.currentTimeMillis();
             try {
-                socket.send(packet);
-                System.out.printf("Sent packet %d\n", ack);
-                waitForACK(timeout, ack);
-                break;
+                socket.receive(ackPacket);
+                timer -= System.currentTimeMillis() - startTime;
+
+                int recACK = (int) ackPacket.getData()[0];
+                if (recACK == ack) {
+                    System.out.printf("Received ACK %d\n", recACK);
+                    curACK = (curACK + 1) % 2;
+                    return;
+                }
+
+                if (timer <= 0) {
+                    // Timeout
+                    throw new SocketTimeoutException();
+                }
             } catch (SocketTimeoutException e) {
                 retransmissions += 1;
+                socket.send(packet);
+                timer = timeout;
                 System.out.printf("Timed out waiting for ACK %d\n", ack);
             }
         }
