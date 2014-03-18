@@ -26,12 +26,12 @@ done
 
 echo window, delay, throughput
 
+ipfw flush
+ipfw add pipe 100 in
+ipfw add pipe 200 out
+
 for DELAY in 10 100 300
 do
-        ipfw flush
-        ipfw add pipe 100 in
-        ipfw add pipe 200 out
-
         ipfw pipe 100 config delay ${DELAY}ms plr 0.005 bw 10Mbits/s
         ipfw pipe 200 config delay ${DELAY}ms plr 0.005 bw 10Mbits/s
 
