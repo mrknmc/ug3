@@ -184,28 +184,6 @@ public class Sender2 {
     }
 
     /**
-     * Waits until it gets acknowledgement from the receiver.
-     *
-     * @param timeout timeout in milliseconds.
-     * @param ack     number to wait for
-     * @throws IOException
-     */
-    private int waitForACK(int timeout, int ack) throws IOException {
-        byte[] buf = new byte[1];
-        DatagramPacket packet = new DatagramPacket(buf, buf.length);
-
-        while (true) {
-            socket.receive(packet);
-            int recACK = (int) packet.getData()[0];
-            if (recACK == ack) {
-                System.out.printf("Received ACK %d\n", recACK);
-                curACK = (curACK + 1) % 2;
-                return recACK;
-            }
-        }
-    }
-
-    /**
      * Creates the packet to be sent. This contains the sequence number,
      * whether we are sending the last packet and the data array.
      *

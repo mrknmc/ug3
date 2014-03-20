@@ -137,22 +137,32 @@ public class Receiver2 {
         ByteBuffer packetData = ByteBuffer.allocate(getMsgSize());
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
         int sequence;
+        boolean fileDone = false;
 
-        do {
+        while (true) {
             socket.receive(packet);
             sequence = extractPacket(packet, packetData);
             System.out.printf("Received packet %d.\n", sequence);
-            if (sequence == curACK || sequence == -1) {
-                // Expected or last packet
+            if (sequence == curACK) {
+                // Expected packet
                 sendACK(packet);
                 curACK = curACK == 0 ? 1 : 0;
                 outStream.write(packetData.array());
+            } else if (sequence == -1) {
+                // Last packet
+                sendACK(packet);
+                curACK = curACK == 0 ? 1 : 0;
+                // If received first time - write it
+                if (!fileDone) {
+                    outStream.write(packetData.array());
+                }
+                fileDone = true;
             } else {
                 // Repeated packet
                 System.out.println("Received a duplicate packet.\n");
                 sendACK(packet);
             }
-        } while (sequence != -1);
+        }
     }
 
     /**

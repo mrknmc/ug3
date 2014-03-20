@@ -88,10 +88,16 @@ public class Sender3 {
             System.exit(1);
         }
 
+        long time, size;
+
         Sender3 sender = null;
         try {
             sender = new Sender3(args);
+            size = sender.inStream.getChannel().size();
+            time = System.currentTimeMillis();
             sender.send();
+            time = System.currentTimeMillis() - time;
+            System.out.println(size / (double) time);
         } catch (IOException e) {
             System.err.println(e.getMessage());
         } finally {
@@ -230,13 +236,13 @@ public class Sender3 {
      *
      * @param packet packet that was received.
      */
-    private synchronized void receivePacket(DatagramPacket packet) {
+    private synchronized void receivePacket(DatagramPacket packet) throws IOException {
+        socket.receive(packet);
         int recACK = extractACK(packet);
         System.out.printf("Received ACK %d\n", recACK);
         base = recACK + 1;
-        if (base == nextSeqNum) {
-            listen = true; // Stop the timer
-        }
+        // Stop timer if equal, start if not
+        listen = base != nextSeqNum;
     }
 
     private class SocketReceiver implements Runnable {
@@ -257,13 +263,14 @@ public class Sender3 {
             while (!done) {
                 if (listen) {
                     try {
-                        socket.receive(packet);
                         receivePacket(packet);
                     } catch (SocketTimeoutException e) {
                         if (done) {
+                            // It's fine we sent the file
                             return;
                         }
                         try {
+                            // The timer will restart automatically
                             timeout();
                         } catch (IOException e1) {
                             e1.printStackTrace();

@@ -144,17 +144,25 @@ public class Receiver3 {
         ByteBuffer packetData = ByteBuffer.allocate(getMsgSize());
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
         int sequence;
+        boolean fileDone = false;
         int lastSeq = 0;
 
         do {
             socket.receive(packet);
             sequence = extractPacket(packet, packetData);
             System.out.printf("Received packet %d.\n", sequence);
-            if (sequence == expectedSeqNum || sequence == -1) {
+            if (sequence == expectedSeqNum) {
                 // either in order or last
                 lastSeq = expectedSeqNum;
                 outStream.write(packetData.array());
                 expectedSeqNum += 1;
+            } else if (sequence == -1) {
+                if (!fileDone) {
+                    lastSeq = expectedSeqNum;
+                    outStream.write(packetData.array());
+                    expectedSeqNum += 1;
+                }
+                fileDone = true;
             }
             sendACK(packet, lastSeq);
         } while (sequence != -1);
