@@ -10,7 +10,9 @@ public class Sender3 {
     private static final int MSG_SIZE = 1024;
     private static final int HEADER_SIZE = 3;
     private static final int DEFAULT_TIMEOUT = 2000;
-    private static final int WINDOW_SIZE = 2;
+    private static final int DEFAULT_WINDOW_SIZE = 2;
+    private static int timeout = DEFAULT_TIMEOUT;
+    private static int windowSize = DEFAULT_WINDOW_SIZE;
     private InetAddress address;
     private int port;
     private DatagramSocket socket;
@@ -88,6 +90,11 @@ public class Sender3 {
             System.exit(1);
         }
 
+        if (args.length >= 5) {
+            timeout = Integer.parseInt(args[3]);
+            windowSize = Integer.parseInt(args[4]);
+        }
+
         long time, size;
 
         Sender3 sender = null;
@@ -153,7 +160,7 @@ public class Sender3 {
      */
     private void sendPacket(DatagramPacket packet) throws IOException {
         while (true) {
-            if (nextSeqNum < base + WINDOW_SIZE) {
+            if (nextSeqNum < base + windowSize) {
                 // We've not sent all possible packets yet
                 sendPackets[nextSeqNum] = packet;
                 socket.send(packet);
@@ -256,7 +263,7 @@ public class Sender3 {
         public void run() {
             DatagramPacket packet = new DatagramPacket(new byte[2], 2);
             try {
-                socket.setSoTimeout(DEFAULT_TIMEOUT);
+                socket.setSoTimeout(timeout);
             } catch (SocketException e) {
                 e.printStackTrace();
             }
