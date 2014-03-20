@@ -129,7 +129,7 @@ public class Sender3 {
             sendPacket(packet);
             counter++;
             size = nextSize;
-            byteArray = nextByteArray;
+            byteArray = nextByteArray.clone();
         }
         System.out.println("File sent.");
     }
