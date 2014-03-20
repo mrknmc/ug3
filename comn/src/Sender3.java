@@ -125,7 +125,7 @@ public class Sender3 {
             nextSize = inStream.read(nextByteArray);
             fileRead = nextSize == -1;
             packet = makePacket(byteArray, counter, size, fileRead);
-            System.out.printf("Sent packet %d\n", counter);
+            //System.out.printf("Sent packet %d\n", counter);
             sendPacket(packet);
             counter++;
             size = nextSize;
@@ -138,10 +138,10 @@ public class Sender3 {
      * Resend all the packets that are not yet ACKed.
      */
     private synchronized void timeout() throws IOException {
-        System.out.println("Timed out.");
+        //System.out.println("Timed out.");
         for (int i = base; i < nextSeqNum; i++) {
             socket.send(sendPackets[i]);
-            System.out.printf("Resent Packet %d.\n", i);
+            //System.out.printf("Resent Packet %d.\n", i);
         }
     }
 
@@ -239,7 +239,7 @@ public class Sender3 {
     private synchronized void receivePacket(DatagramPacket packet) throws IOException {
         socket.receive(packet);
         int recACK = extractACK(packet);
-        System.out.printf("Received ACK %d\n", recACK);
+        //System.out.printf("Received ACK %d\n", recACK);
         base = recACK + 1;
         // Stop timer if equal, start if not
         listen = base != nextSeqNum;
