@@ -12,14 +12,17 @@ ipfw pipe 200 config delay 10ms plr 0.05 bw 10Mbits/s > /dev/null
 
 echo timeout, retransmission, throughput
 
-for TIMEOUT in 10 20 30 40 50 60 70 80 90 100
+for TIMEOUT in `seq 10 10 100`
 do
-        echo -n "$TIMEOUT, "
-        java Receiver2 54321 rfile.jpg > /dev/null &
+        java Receiver2 54321 rfile.jpg > /dev/null & rec_pid=$!
         sleep 1
-        java Sender2 localhost 54321 sfile.jpg $TIMEOUT
-        wait
+        java Sender2 localhost 54321 sfile.jpg $TIMEOUT | xargs echo $TIMEOUT, 
+	# kill the receiver
+	kill -9 $rec_pid > /dev/null
+	wait $rec_pid > /dev/null
 done
+
+exit
 
 echo
 
