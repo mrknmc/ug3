@@ -23,10 +23,10 @@ for TIMEOUT in `seq 10 10 100`
 do
         java Receiver2 54321 rfile.jpg > /dev/null & rec_pid=$!
         sleep 1
-        java Sender2 localhost 54321 sfile.jpg $TIMEOUT | xargs echo $TIMEOUT, 
-	# kill the receiver
-	kill -9 $rec_pid > /dev/null
-	wait $rec_pid > /dev/null
+        java Sender2 localhost 54321 sfile.jpg $TIMEOUT | xargs echo "$TIMEOUT, "
+        # kill the receiver
+        kill -9 $rec_pid > /dev/null
+        wait $rec_pid > /dev/null
 done
 
 exit
@@ -38,7 +38,7 @@ echo
 
 echo window, delay, throughput
 
-ipfw - flush > /dev/null
+ipfw -f flush > /dev/null
 ipfw add pipe 100 in > /dev/null
 ipfw add pipe 200 out > /dev/null
 
@@ -51,9 +51,12 @@ do
         for WINDOW in 1 2 4 8 16 32 64 128 256
         do
                 echo -n "$WINDOW, $DELAY, "
-                java Receiver3 54321 rfile.jpg > /dev/null &
+                java Receiver3 54321 rfile.jpg > /dev/null & rec_pid=$!
                 sleep 1
-                java Sender3 localhost 54321 sfile.jpg $TIMEOUT $WINDOW
+                java Sender3 localhost 54321 sfile.jpg $TIMEOUT $WINDOW | xargs echo "$TIMEOUT, "
+                # kill the receiver
+                kill -9 $rec_pid > /dev/null
+                wait $rec_pid > /dev/null
         done
 done
 

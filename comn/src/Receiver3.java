@@ -147,7 +147,7 @@ public class Receiver3 {
         boolean fileDone = false;
         int lastSeq = 0;
 
-        do {
+        while (true) {
             socket.receive(packet);
             sequence = extractPacket(packet, packetData);
             System.out.printf("Received packet %d.\n", sequence);
@@ -165,8 +165,7 @@ public class Receiver3 {
                 fileDone = true;
             }
             sendACK(packet, lastSeq);
-        } while (sequence != -1);
-        System.out.println("File received.");
+        }
     }
 
     /**
