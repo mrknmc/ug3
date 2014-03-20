@@ -13,6 +13,7 @@ public class Receiver2 {
     private DatagramSocket socket;
     private FileOutputStream outStream;
     private int curACK = 0;
+    private boolean fileDone = false;
 
     /**
      * Constructs a Receiver1 object from the given properties.
@@ -54,6 +55,21 @@ public class Receiver2 {
         return true;
     }
 
+    /**
+     * Converts an int into a specified number of bytes
+     *
+     * @param value      integer value to convert
+     * @param numOfBytes how many bytes to use for the int
+     * @return int converted into a byte array
+     */
+    public static byte[] intToBytes(int value, int numOfBytes) {
+        byte[] byteArray = new byte[numOfBytes];
+        for (int i = 0; i < numOfBytes; i++) {
+            byteArray[i] = (byte) ((value >> 8 * i) & 0xFF);
+        }
+        return byteArray;
+    }
+
     public static void main(String[] args) throws IOException {
         if (!validateArgs(args)) {
             System.exit(1);
@@ -80,17 +96,6 @@ public class Receiver2 {
         socket.close();
         outStream.flush();
         outStream.close();
-    }
-
-    /**
-     * Sends the acknowledgement to the originator of the received packet.
-     *
-     * @param receivedPacket packet we are acknowledging.
-     */
-    private void sendACK(DatagramPacket receivedPacket) throws IOException {
-        DatagramPacket packet = makeACKPacket(receivedPacket);
-        socket.send(packet);
-        System.out.printf("Sent ACK %d.\n", curACK);
     }
 
     /**
@@ -122,9 +127,9 @@ public class Receiver2 {
         dest.clear();
         byte[] data = packet.getData();
         int sequence = ByteBuffer.wrap(new byte[]{0, 0, data[1], data[0]}).getInt();
-        byte eof = data[2];
+        fileDone = data[2] == (byte) 1;
         dest.put(data, HEADER_SIZE, packet.getLength() - HEADER_SIZE);
-        return eof == 1 ? -1 : sequence;
+        return sequence;
     }
 
     /**
@@ -133,11 +138,11 @@ public class Receiver2 {
      * @throws IOException
      */
     public void receive() throws IOException {
+        DatagramPacket ackPacket;
         byte[] buf = new byte[getTotalSize()];
         ByteBuffer packetData = ByteBuffer.allocate(getMsgSize());
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
         int sequence;
-        boolean fileDone = false;
 
         while (true) {
             socket.receive(packet);
@@ -145,22 +150,20 @@ public class Receiver2 {
             System.out.printf("Received packet %d.\n", sequence);
             if (sequence == curACK) {
                 // Expected packet
-                sendACK(packet);
-                curACK = curACK == 0 ? 1 : 0;
+                ackPacket = makeACKPacket(packet, curACK);
                 outStream.write(packetData.array());
-            } else if (sequence == -1) {
-                // Last packet
-                sendACK(packet);
-                curACK = curACK == 0 ? 1 : 0;
-                // If received first time - write it
-                if (!fileDone) {
-                    outStream.write(packetData.array());
-                }
-                fileDone = true;
+                socket.send(ackPacket);
+                // flip expected sequence
+                curACK = (curACK + 1) % 2;
             } else {
                 // Repeated packet
                 System.out.println("Received a duplicate packet.\n");
-                sendACK(packet);
+                ackPacket = makeACKPacket(packet, sequence);
+                socket.send(ackPacket);
+            }
+
+            if (fileDone) {
+                outStream.close();
             }
         }
     }
@@ -171,9 +174,9 @@ public class Receiver2 {
      * @param receivedPacket packet we are acknowledging.
      * @return packet to be sent as acknowledgement
      */
-    private DatagramPacket makeACKPacket(DatagramPacket receivedPacket) {
+    private DatagramPacket makeACKPacket(DatagramPacket receivedPacket, int ack) {
         ByteBuffer buf = ByteBuffer.allocate(2);
-        buf.put(receivedPacket.getData(), 0, 2);
+        buf.put(intToBytes(ack, 2));
         return new DatagramPacket(buf.array(), buf.capacity(), receivedPacket.getAddress(), receivedPacket.getPort());
     }
 
