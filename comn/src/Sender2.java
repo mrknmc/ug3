@@ -130,7 +130,7 @@ public class Sender2 {
             packet = makePacket(byteArray, curACK, size, fileRead);
             sendPacket(packet, curACK);
             size = nextSize;
-            byteArray = nextByteArray;
+            byteArray = nextByteArray.clone();
         }
     }
 
