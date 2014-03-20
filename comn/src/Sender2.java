@@ -126,7 +126,6 @@ public class Sender2 {
         while (!fileRead) {
             nextSize = inStream.read(nextByteArray);
             fileRead = nextSize == -1;
-            System.out.println(Arrays.toString(byteArray));
             packet = makePacket(byteArray, curACK, size, fileRead);
             sendPacket(packet, curACK);
             size = nextSize;
@@ -158,7 +157,7 @@ public class Sender2 {
         socket.send(packet);
 
         while (true) {
-            System.out.printf("Sent packet %d\n", ack);
+            //System.out.printf("Sent packet %d\n", ack);
             socket.setSoTimeout((int) timer);
             startTime = System.currentTimeMillis();
             try {
@@ -167,7 +166,7 @@ public class Sender2 {
 
                 int recACK = (int) ackPacket.getData()[0];
                 if (recACK == ack) {
-                    System.out.printf("Received ACK %d\n", recACK);
+                    //System.out.printf("Received ACK %d\n", recACK);
                     curACK = (curACK + 1) % 2;
                     return;
                 }
@@ -180,7 +179,7 @@ public class Sender2 {
                 retransmissions += 1;
                 socket.send(packet);
                 timer = timeout;
-                System.out.printf("Timed out waiting for ACK %d\n", ack);
+                //System.out.printf("Timed out waiting for ACK %d\n", ack);
             }
         }
     }
@@ -203,8 +202,6 @@ public class Sender2 {
         buffer.put(byteSequence);
         buffer.put(eof);
         buffer.put(data, 0, size);
-        System.out.printf("Size: %d\n", size);
-        System.out.printf("Position: %d\n", buffer.position());
         return new DatagramPacket(buffer.array(), 0, buffer.position(), address, port);
     }
 
