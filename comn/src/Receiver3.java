@@ -124,8 +124,6 @@ public class Receiver3 {
     private int extractPacket(DatagramPacket packet, ByteBuffer dest) {
         dest.clear();
         byte[] data = packet.getData();
-        System.out.println(data.length);
-        System.out.println(packet.getLength());
         int sequence = ByteBuffer.wrap(new byte[]{0, 0, data[1], data[0]}).getInt();
         byte eof = data[2];
         // take everything except for the header
@@ -150,7 +148,7 @@ public class Receiver3 {
         while (true) {
             socket.receive(packet);
             sequence = extractPacket(packet, packetData);
-            System.out.printf("Received packet %d.\n", sequence);
+            //System.out.printf("Received packet %d.\n", sequence);
             if (sequence == expectedSeqNum) {
                 // either in order or last
                 lastSeq = expectedSeqNum;
@@ -176,7 +174,7 @@ public class Receiver3 {
     private void sendACK(DatagramPacket receivedPacket, int seq) throws IOException {
         DatagramPacket packet = makeACKPacket(receivedPacket, seq);
         socket.send(packet);
-        System.out.printf("Sent ACK %d.\n", seq);
+        //System.out.printf("Sent ACK %d.\n", seq);
     }
 
     /**

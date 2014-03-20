@@ -106,7 +106,7 @@ public class Sender3 {
             time = System.currentTimeMillis() - time;
             System.out.println(size / (double) time);
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            e.printStackTrace();
         } finally {
             if (sender != null) {
                 sender.close();
@@ -138,7 +138,7 @@ public class Sender3 {
             size = nextSize;
             byteArray = nextByteArray.clone();
         }
-        System.out.println("File sent.");
+        //System.out.println("File sent.");
     }
 
     /**
@@ -248,7 +248,6 @@ public class Sender3 {
         int recACK = extractACK(packet);
         if (recACK < base) {
             // Ignore smaller ACKs
-            System.out.println("WOOOOT");
             return;
         }
         //System.out.printf("Received ACK %d\n", recACK);
