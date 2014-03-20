@@ -154,12 +154,12 @@ public class Receiver3 {
             if (sequence == expectedSeqNum) {
                 // either in order or last
                 lastSeq = expectedSeqNum;
-                outStream.write(packetData.array());
+                outStream.write(packetData.array(), 0, packetData.position());
                 expectedSeqNum += 1;
             } else if (sequence == -1) {
                 if (!fileDone) {
                     lastSeq = expectedSeqNum;
-                    outStream.write(packetData.array());
+                    outStream.write(packetData.array(), 0, packetData.position());
                     expectedSeqNum += 1;
                 }
                 fileDone = true;

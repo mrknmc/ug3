@@ -151,7 +151,7 @@ public class Receiver2 {
             if (sequence == curACK) {
                 // Expected packet
                 ackPacket = makeACKPacket(packet, curACK);
-                outStream.write(packetData.array());
+                outStream.write(packetData.array(), 0, packetData.position());
                 socket.send(ackPacket);
                 // flip expected sequence
                 curACK = (curACK + 1) % 2;
