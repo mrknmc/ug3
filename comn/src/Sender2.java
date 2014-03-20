@@ -7,6 +7,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 
 public class Sender2 {
@@ -125,12 +126,9 @@ public class Sender2 {
         while (!fileRead) {
             nextSize = inStream.read(nextByteArray);
             fileRead = nextSize == -1;
-            System.out.printf("SIZE: %d\n", size);
-            System.out.printf("ARRAY SIZE: %d\n", byteArray.length);
+            System.out.println(Arrays.toString(byteArray));
             packet = makePacket(byteArray, curACK, size, fileRead);
             sendPacket(packet, curACK);
-            System.out.printf("NEXT SIZE: %d\n", nextSize);
-            System.out.printf("NEXT ARRAY SIZE: %d\n", nextByteArray.length);
             size = nextSize;
             byteArray = nextByteArray;
         }
