@@ -246,6 +246,11 @@ public class Sender3 {
     private synchronized void receivePacket(DatagramPacket packet) throws IOException {
         socket.receive(packet);
         int recACK = extractACK(packet);
+        if (recACK < base) {
+            // Ignore smaller ACKs
+            System.out.println("WOOOOT");
+            return;
+        }
         //System.out.printf("Received ACK %d\n", recACK);
         base = recACK + 1;
         // Stop timer if equal, start if not
