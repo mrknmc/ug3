@@ -198,14 +198,14 @@ public class Sender2 {
      * @return packet to be sent to the receiver.
      */
     private DatagramPacket makePacket(byte[] data, int sequence, int size, boolean fileRead) {
-        ByteBuffer buffer = ByteBuffer.allocate(size);
+        ByteBuffer buffer = ByteBuffer.allocate(getTotalSize());
         byte eof = fileRead ? (byte) 1 : (byte) 0;
         // convert sequence to either 0 or 1
         byte[] byteSequence = intToBytes(sequence, 2);
         buffer.put(byteSequence);
         buffer.put(eof);
         buffer.put(data, 0, size);
-        return new DatagramPacket(buffer.array(), 0, size, address, port);
+        return new DatagramPacket(buffer.array(), 0, buffer.position(), address, port);
     }
 
     /**
