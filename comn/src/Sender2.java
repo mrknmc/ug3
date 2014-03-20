@@ -203,6 +203,8 @@ public class Sender2 {
         buffer.put(byteSequence);
         buffer.put(eof);
         buffer.put(data, 0, size);
+        System.out.printf("Size: %d\n", size);
+        System.out.printf("Position: %d\n", buffer.position());
         return new DatagramPacket(buffer.array(), 0, buffer.position(), address, port);
     }
 
