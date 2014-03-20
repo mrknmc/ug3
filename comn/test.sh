@@ -3,6 +3,13 @@
 # Question 1
 # 10% packet loss rate 10Mbps bandwidth and 10ms delay
 
+control_c() {
+	killall -9 java
+	exit
+}
+
+trap control_c SIGINT
+
 ipfw -f flush > /dev/null
 ipfw add pipe 100 in > /dev/null
 ipfw add pipe 200 out > /dev/null
