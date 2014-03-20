@@ -125,8 +125,12 @@ public class Sender2 {
         while (!fileRead) {
             nextSize = inStream.read(nextByteArray);
             fileRead = nextSize == -1;
+            System.out.printf("SIZE: %d\n", size);
+            System.out.printf("ARRAY SIZE: %d\n", byteArray.length);
             packet = makePacket(byteArray, curACK, size, fileRead);
             sendPacket(packet, curACK);
+            System.out.printf("NEXT SIZE: %d\n", nextSize);
+            System.out.printf("NEXT ARRAY SIZE: %d\n", nextByteArray.length);
             size = nextSize;
             byteArray = nextByteArray;
         }
