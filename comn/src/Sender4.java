@@ -177,7 +177,7 @@ public class Sender4 {
                 break;
             } else {
                 // We've sent all the possible packets - now we wait
-                Thread.yield();
+                //Thread.yield();
             }
         }
     }
@@ -263,6 +263,11 @@ public class Sender4 {
             sendPackets.put(recACK, true);
             if (recACK == base) {
                 base += 1;
+                while (sendPackets.containsKey(base) && sendPackets.get(base) && base < nextSeqNum) {
+                    base += 1;
+                }
+                System.out.printf("REC-ACK: %d\n", recACK);
+                System.out.printf("BASE: %d\n", base);
             }
         }
     }
@@ -303,7 +308,7 @@ public class Sender4 {
                 }
             }
             // Let the thread die if it's acked and remove from the map
-            sendPackets.remove(sequence);
+            //sendPackets.remove(sequence);
         }
     }
 

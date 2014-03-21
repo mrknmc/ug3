@@ -145,15 +145,16 @@ public class Receiver4 {
      * @throws IOException
      */
     public void receive() throws IOException {
-        byte[] buf = new byte[getTotalSize()];
         ByteBuffer packetData = ByteBuffer.allocate(getMsgSize());
-        DatagramPacket packet = new DatagramPacket(buf, buf.length);
         int sequence;
 
         while (true) {
+            byte[] buf = new byte[getTotalSize()];
+            DatagramPacket packet = new DatagramPacket(buf, buf.length);
             socket.receive(packet);
             sequence = extractPacket(packet, packetData);
             System.out.printf("Received packet %d.\n", sequence);
+            System.out.printf("BASE: %d\n", base);
             if (base <= sequence && sequence <= base + windowSize - 1) {
                 sendACK(packet, sequence);
                 // out of order
@@ -164,13 +165,20 @@ public class Receiver4 {
                 } else if (sequence == base) {
                     // in order
                     outStream.write(packetData.array(), 0, packetData.position());
+                    System.out.printf("Writing %d\n", sequence);
                     base += 1;
                     // try to write everything else in order
                     DatagramPacket buffPacket;
-                    for (int i = base + 1; (buffPacket = packets.get(i)) != null; i++) {
+                    while (true) {
+                        ByteBuffer packetBuff = ByteBuffer.allocate(getTotalSize());
+                        buffPacket = packets.get(base);
+                        if (buffPacket == null) {
+                            break;
+                        }
                         base += 1;
-                        extractPacket(buffPacket, packetData);
-                        outStream.write(packetData.array(), 0, packetData.position());
+                        int seq = extractPacket(buffPacket, packetBuff);
+                        System.out.printf("Writing %d\n", seq);
+                        outStream.write(packetBuff.array(), 0, packetBuff.position());
                     }
                 }
                 if (fileDone) {
@@ -179,6 +187,7 @@ public class Receiver4 {
             } else if (base - windowSize <= sequence && sequence <= base - 1) {
                 sendACK(packet, sequence);
             }
+            System.out.printf("BASE2: %d\n", base);
         }
     }
 
