@@ -100,7 +100,6 @@ public class Receiver4 {
     public void close() throws IOException {
         socket.close();
         outStream.flush();
-        outStream.close();
     }
 
     /**
@@ -135,7 +134,6 @@ public class Receiver4 {
         fileDone = data[2] == (byte) 1;
         // take everything except for the header
         dest.put(data, HEADER_SIZE, packet.getLength() - HEADER_SIZE);
-        // return -1 on last packet
         return sequence;
     }
 
@@ -153,8 +151,6 @@ public class Receiver4 {
             DatagramPacket packet = new DatagramPacket(buf, buf.length);
             socket.receive(packet);
             sequence = extractPacket(packet, packetData);
-            System.out.printf("Received packet %d.\n", sequence);
-            System.out.printf("BASE: %d\n", base);
             if (base <= sequence && sequence <= base + windowSize - 1) {
                 sendACK(packet, sequence);
                 // out of order
@@ -165,7 +161,6 @@ public class Receiver4 {
                 } else if (sequence == base) {
                     // in order
                     outStream.write(packetData.array(), 0, packetData.position());
-                    System.out.printf("Writing %d\n", sequence);
                     base += 1;
                     // try to write everything else in order
                     DatagramPacket buffPacket;
@@ -177,7 +172,6 @@ public class Receiver4 {
                         }
                         base += 1;
                         int seq = extractPacket(buffPacket, packetBuff);
-                        System.out.printf("Writing %d\n", seq);
                         outStream.write(packetBuff.array(), 0, packetBuff.position());
                     }
                 }
@@ -187,7 +181,6 @@ public class Receiver4 {
             } else if (base - windowSize <= sequence && sequence <= base - 1) {
                 sendACK(packet, sequence);
             }
-            System.out.printf("BASE2: %d\n", base);
         }
     }
 
@@ -199,7 +192,6 @@ public class Receiver4 {
     private void sendACK(DatagramPacket receivedPacket, int seq) throws IOException {
         DatagramPacket packet = makeACKPacket(receivedPacket, seq);
         socket.send(packet);
-        System.out.printf("Sent ACK %d.\n", seq);
     }
 
     /**

@@ -96,16 +96,16 @@ public class Sender3 {
             System.exit(1);
         }
 
-        long time, size;
+        double time, size;
 
         Sender3 sender = null;
         try {
             sender = new Sender3(args);
-            size = sender.inStream.getChannel().size();
+            size = sender.inStream.getChannel().size() / 1024.0;
             time = System.currentTimeMillis();
             sender.send();
-            time = System.currentTimeMillis() - time;
-            System.out.println(size / (double) time);
+            time = (System.currentTimeMillis() - time) / 1000.0;
+            System.out.println(size / time);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -133,23 +133,19 @@ public class Sender3 {
             nextSize = inStream.read(nextByteArray);
             fileRead = nextSize == -1;
             packet = makePacket(byteArray, counter, size, fileRead);
-            //System.out.printf("Sent packet %d\n", counter);
             sendPacket(packet);
             counter++;
             size = nextSize;
             byteArray = nextByteArray.clone();
         }
-        //System.out.println("File sent.");
     }
 
     /**
      * Resend all the packets that are not yet ACKed.
      */
     private synchronized void timeout() throws IOException {
-        //System.out.println("Timed out.");
         for (int i = base; i < nextSeqNum; i++) {
             socket.send(sendPackets[i]);
-            //System.out.printf("Resent Packet %d.\n", i);
         }
     }
 
@@ -251,19 +247,18 @@ public class Sender3 {
             // Ignore smaller ACKs
             return;
         }
-        //System.out.printf("Received ACK %d\n", recACK);
         base = recACK + 1;
         // Stop timer if equal, start if not
         listen = base != nextSeqNum;
     }
 
+    /**
+     * Runs on a background thread listening for incoming
+     * acknowledgement packets which are then sent to
+     * the main thread.
+     */
     private class SocketReceiver implements Runnable {
 
-        /**
-         * Runs on a background thread listening for incoming
-         * acknowledgement packets which are then sent to
-         * the main thread.
-         */
         @Override
         public void run() {
             DatagramPacket packet = new DatagramPacket(new byte[2], 2);

@@ -94,6 +94,7 @@ public class Sender1 {
 
     /**
      * Returns the message size of a packet.
+     *
      * @return size of a message of a packet.
      */
     public int getMsgSize() {
@@ -102,6 +103,7 @@ public class Sender1 {
 
     /**
      * Returns the total size of a packet.
+     *
      * @return total size of a packet.
      */
     public int getTotalSize() {

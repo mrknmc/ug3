@@ -93,8 +93,6 @@ public class Receiver3 {
      */
     public void close() throws IOException {
         socket.close();
-        outStream.flush();
-        outStream.close();
     }
 
     /**
@@ -129,7 +127,6 @@ public class Receiver3 {
         fileDone = data[2] == (byte) 1;
         // take everything except for the header
         dest.put(data, HEADER_SIZE, packet.getLength() - HEADER_SIZE);
-        // return -1 on last packet
         return sequence;
     }
 
@@ -148,7 +145,6 @@ public class Receiver3 {
         while (true) {
             socket.receive(packet);
             sequence = extractPacket(packet, packetData);
-            //System.out.printf("Received packet %d.\n", sequence);
             if (sequence == expectedSeqNum) {
                 // either in order or last
                 lastSeq = expectedSeqNum;
@@ -159,6 +155,9 @@ public class Receiver3 {
                 fileDone = false;
             }
             sendACK(packet, lastSeq);
+            if (fileDone) {
+                outStream.close();
+            }
         }
     }
 
@@ -170,11 +169,11 @@ public class Receiver3 {
     private void sendACK(DatagramPacket receivedPacket, int seq) throws IOException {
         DatagramPacket packet = makeACKPacket(receivedPacket, seq);
         socket.send(packet);
-        //System.out.printf("Sent ACK %d.\n", seq);
     }
 
     /**
      * Creates an acknowledgement packet which is sent to the sender.
+     *
      * @param receivedPacket packet we are acknowledging.
      * @return acknowledgement packet to be sent to the sender.
      */

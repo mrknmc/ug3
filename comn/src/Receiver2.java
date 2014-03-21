@@ -79,7 +79,6 @@ public class Receiver2 {
         try {
             receiver = new Receiver2(args);
             receiver.receive();
-            System.out.println("File received.");
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -94,8 +93,6 @@ public class Receiver2 {
      */
     public void close() throws IOException {
         socket.close();
-        outStream.flush();
-        outStream.close();
     }
 
     /**
@@ -147,7 +144,6 @@ public class Receiver2 {
         while (true) {
             socket.receive(packet);
             sequence = extractPacket(packet, packetData);
-            System.out.printf("Received packet %d.\n", sequence);
             if (sequence == curACK) {
                 // Expected packet
                 ackPacket = makeACKPacket(packet, curACK);
@@ -157,7 +153,6 @@ public class Receiver2 {
                 curACK = (curACK + 1) % 2;
             } else {
                 // Repeated packet
-                System.out.println("Received a duplicate packet.\n");
                 ackPacket = makeACKPacket(packet, sequence);
                 socket.send(ackPacket);
             }

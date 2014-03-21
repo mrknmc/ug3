@@ -44,7 +44,6 @@ public class Receiver1 {
         try {
             receiver = new Receiver1(args);
             receiver.receive();
-            System.out.println("File received.");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -74,6 +73,7 @@ public class Receiver1 {
 
     /**
      * Returns the message size of a packet.
+     *
      * @return size of a message of a packet.
      */
     public int getMsgSize() {
@@ -82,6 +82,7 @@ public class Receiver1 {
 
     /**
      * Returns the total size of a packet.
+     *
      * @return total size of a packet.
      */
     public int getTotalSize() {
@@ -118,7 +119,6 @@ public class Receiver1 {
         do {
             socket.receive(packet);
             sequence = extractPacket(packet, packetData);
-            System.out.printf("Received packet %d.\n", sequence);
             outStream.write(packetData.array());
         } while (sequence != -1);
     }

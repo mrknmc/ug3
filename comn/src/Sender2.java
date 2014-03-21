@@ -7,14 +7,12 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 
 public class Sender2 {
     public static final int MSG_SIZE = 1024;
     public static final int HEADER_SIZE = 3;
-    public static final int DEFAULT_TIMEOUT = 40;
-    private static long timeout = DEFAULT_TIMEOUT;
+    private long timeout;
     private InetAddress address;
     private int port;
     private DatagramSocket socket;
@@ -28,7 +26,7 @@ public class Sender2 {
      * @param args arguments of the Sender1
      */
     public Sender2(String[] args) throws IOException {
-        this(args[0], Integer.parseInt(args[1]), args[2]);
+        this(args[0], Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]));
     }
 
     /**
@@ -38,12 +36,12 @@ public class Sender2 {
      * @param port     the port of the server.
      * @param fileName the file name of the file to transfer.
      */
-    public Sender2(String hostName, int port, String fileName) throws IOException {
+    public Sender2(String hostName, int port, String fileName, int timeout) throws IOException {
         this.address = InetAddress.getByName(hostName);
         this.port = port;
         this.socket = new DatagramSocket();
         this.inStream = new FileInputStream(fileName);
-        //this.socket.setSoTimeout(timeout);
+        this.timeout = timeout;
     }
 
     public static void main(String[] args) throws IOException {
@@ -51,21 +49,17 @@ public class Sender2 {
             System.exit(1);
         }
 
-        if (args.length >= 4) {
-            Sender2.timeout = Integer.parseInt(args[3]);
-        }
-
-        long time, size;
+        double time, size;
 
         Sender2 sender = null;
         try {
             sender = new Sender2(args);
-            size = sender.inStream.getChannel().size();
+            // Convert to KB
+            size = sender.inStream.getChannel().size() / 1024.0;
             time = System.currentTimeMillis();
             sender.send();
-            time = System.currentTimeMillis() - time;
-            //System.out.println("File sent.");
-            System.out.printf("%d, %f\n", sender.retransmissions, size / (double) time);
+            time = (System.currentTimeMillis() - time) / 1000.0;
+            System.out.printf("%d, %f\n", sender.retransmissions, size / time);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -87,8 +81,10 @@ public class Sender2 {
                 System.err.println("No host name specified!");
             } else if (args.length < 2) {
                 System.err.println("No port number specified!");
-            } else {
+            } else if (args.length < 3) {
                 System.err.println("No file name specified!");
+            } else {
+                System.err.println("No timeout specified!");
             }
             return false;
         }
@@ -157,7 +153,6 @@ public class Sender2 {
         socket.send(packet);
 
         while (true) {
-            //System.out.printf("Sent packet %d\n", ack);
             socket.setSoTimeout((int) timer);
             startTime = System.currentTimeMillis();
             try {
@@ -166,7 +161,6 @@ public class Sender2 {
 
                 int recACK = (int) ackPacket.getData()[0];
                 if (recACK == ack) {
-                    //System.out.printf("Received ACK %d\n", recACK);
                     curACK = (curACK + 1) % 2;
                     return;
                 }
@@ -179,7 +173,6 @@ public class Sender2 {
                 retransmissions += 1;
                 socket.send(packet);
                 timer = timeout;
-                //System.out.printf("Timed out waiting for ACK %d\n", ack);
             }
         }
     }

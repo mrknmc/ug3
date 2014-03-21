@@ -105,16 +105,16 @@ public class Sender4 {
             System.exit(1);
         }
 
-        long time, size;
+        double time, size;
 
         Sender4 sender = null;
         try {
             sender = new Sender4(args);
-            size = sender.inStream.getChannel().size();
+            size = sender.inStream.getChannel().size() / 1024.0;
             time = System.currentTimeMillis();
             sender.send();
-            time = System.currentTimeMillis() - time;
-            System.out.println(size / (double) time);
+            time = (System.currentTimeMillis() - time) / 1000.0;
+            System.out.println(size / time);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -147,14 +147,12 @@ public class Sender4 {
             size = nextSize;
             byteArray = nextByteArray.clone();
         }
-        //System.out.println("File sent.");
     }
 
     /**
      * Resend all the packets that are not yet ACKed.
      */
     private void timeout(DatagramPacket packet) throws IOException {
-        //System.out.println("Resending Packet.");
         socket.send(packet);
     }
 
@@ -169,15 +167,12 @@ public class Sender4 {
             if (nextSeqNum < base + windowSize) {
                 // We've not sent all possible packets yet
                 sendPackets.put(nextSeqNum, false);
-                //System.out.printf("Sent packet %d\n", nextSeqNum);
                 socket.send(packet);
                 // Start a timer for this packet
                 service.submit(new Timer(nextSeqNum, packet));
                 nextSeqNum += 1;
                 break;
-            } else {
                 // We've sent all the possible packets - now we wait
-                //Thread.yield();
             }
         }
     }
@@ -253,7 +248,6 @@ public class Sender4 {
     private synchronized void receivePacket(DatagramPacket packet) throws IOException {
         socket.receive(packet);
         int recACK = extractACK(packet);
-        //System.out.printf("Received ACK %d\n", recACK);
         if (recACK < base) {
             // Ignore smaller ACKs
             return;
@@ -266,12 +260,14 @@ public class Sender4 {
                 while (sendPackets.containsKey(base) && sendPackets.get(base) && base < nextSeqNum) {
                     base += 1;
                 }
-                //System.out.printf("REC-ACK: %d\n", recACK);
-                //System.out.printf("BASE: %d\n", base);
             }
         }
     }
 
+    /**
+     * Runs on a background thread for each packet
+     * computing whether it should time out.
+     */
     private class Timer implements Runnable {
 
         private long startTime;
@@ -284,10 +280,6 @@ public class Sender4 {
             startTime = System.currentTimeMillis();
         }
 
-        /**
-         * Runs on a background thread for each packet
-         * computing whether it should time out.
-         */
         @Override
         public void run() {
             long nowTime;
@@ -297,28 +289,24 @@ public class Sender4 {
                 nowTime = System.currentTimeMillis();
                 if (nowTime - startTime >= timeout) {
                     // Timeout the current packet
-                    //System.out.println("Timed out.");
                     try {
                         timeout(packet);
                         startTime = nowTime;
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    //System.out.println("Restarting timer.");
                 }
             }
-            // Let the thread die if it's acked and remove from the map
-            //sendPackets.remove(sequence);
         }
     }
 
+    /**
+     * Runs on a background thread listening for incoming
+     * acknowledgement packets which are then sent to
+     * the main thread.
+     */
     private class SocketReceiver implements Runnable {
 
-        /**
-         * Runs on a background thread listening for incoming
-         * acknowledgement packets which are then sent to
-         * the main thread.
-         */
         @Override
         public void run() {
             DatagramPacket packet = new DatagramPacket(new byte[2], 2);
