@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -21,7 +22,7 @@ public class Sender4 {
     private int port;
     private DatagramSocket socket;
     private FileInputStream inStream;
-    private ConcurrentMap<Integer, Boolean> sendPackets = new ConcurrentHashMap<Integer, Boolean>();
+    private volatile ConcurrentMap<Integer, Boolean> sendPackets = new ConcurrentHashMap<Integer, Boolean>();
     private volatile int nextSeqNum = 1;
     private volatile int base = 1;
 
@@ -42,6 +43,7 @@ public class Sender4 {
         this.address = InetAddress.getByName(hostName);
         this.port = port;
         this.socket = new DatagramSocket();
+        this.socket.setSoTimeout(timeout);
         this.inStream = new FileInputStream(fileName);
         this.timeout = timeout;
         this.windowSize = windowSize;
@@ -151,8 +153,8 @@ public class Sender4 {
     /**
      * Resend all the packets that are not yet ACKed.
      */
-    private synchronized void timeout(DatagramPacket packet) throws IOException {
-        System.out.println("Timed out.");
+    private void timeout(DatagramPacket packet) throws IOException {
+        System.out.println("Resending Packet.");
         socket.send(packet);
     }
 
@@ -201,6 +203,7 @@ public class Sender4 {
         }
         done = true;
         receiverThread.join();
+        service.shutdown();
         socket.close();
         inStream.close();
     }
@@ -276,6 +279,10 @@ public class Sender4 {
             startTime = System.currentTimeMillis();
         }
 
+        /**
+         * Runs on a background thread for each packet
+         * computing whether it should time out.
+         */
         @Override
         public void run() {
             long nowTime;
@@ -285,17 +292,18 @@ public class Sender4 {
                 nowTime = System.currentTimeMillis();
                 if (nowTime - startTime >= timeout) {
                     // Timeout the current packet
-                    System.out.println("Timed out");
+                    System.out.println("Timed out.");
                     try {
                         timeout(packet);
                         startTime = nowTime;
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                    System.out.println("Restarting timer.");
                 }
             }
-            // Let the thread die if it's acked
-            // maybe remove from the map?
+            // Let the thread die if it's acked and remove from the map
+            sendPackets.remove(sequence);
         }
     }
 
@@ -312,6 +320,11 @@ public class Sender4 {
             while (!done) {
                 try {
                     receivePacket(packet);
+                } catch (SocketTimeoutException e) {
+                    if (done) {
+                        // we've sent the file
+                        break;
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
