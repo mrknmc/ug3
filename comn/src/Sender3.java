@@ -9,10 +9,8 @@ import java.nio.ByteBuffer;
 public class Sender3 {
     private static final int MSG_SIZE = 1024;
     private static final int HEADER_SIZE = 3;
-    private static final int DEFAULT_TIMEOUT = 2000;
-    private static final int DEFAULT_WINDOW_SIZE = 2;
-    private static int timeout = DEFAULT_TIMEOUT;
-    private static int windowSize = DEFAULT_WINDOW_SIZE;
+    private int timeout;
+    private int windowSize;
     private InetAddress address;
     private int port;
     private DatagramSocket socket;
@@ -28,15 +26,19 @@ public class Sender3 {
     /**
      * Constructs a Sender1 object with given properties.
      *
-     * @param hostName the address of the server.
-     * @param port     the port of the server.
-     * @param fileName the file name of the file to transfer.
+     * @param hostName   the address of the server.
+     * @param port       the port of the server.
+     * @param fileName   the file name of the file to transfer.
+     * @param timeout    timeout time
+     * @param windowSize size of the window
      */
-    public Sender3(String hostName, int port, String fileName) throws IOException {
+    public Sender3(String hostName, int port, String fileName, int timeout, int windowSize) throws IOException {
         this.address = InetAddress.getByName(hostName);
         this.port = port;
         this.socket = new DatagramSocket();
         this.inStream = new FileInputStream(fileName);
+        this.timeout = timeout;
+        this.windowSize = windowSize;
         this.receiverThread.start();
     }
 
@@ -46,7 +48,7 @@ public class Sender3 {
      * @param args arguments of the Sender1
      */
     public Sender3(String[] args) throws IOException {
-        this(args[0], Integer.parseInt(args[1]), args[2]);
+        this(args[0], Integer.parseInt(args[1]), args[2], Integer.parseInt(args[3]), Integer.parseInt(args[4]));
     }
 
     /**
@@ -72,13 +74,17 @@ public class Sender3 {
      * @return the validity of the arguments.
      */
     public static boolean validateArgs(String[] args) {
-        if (args.length < 3) {
+        if (args.length < 5) {
             if (args.length < 1) {
                 System.err.println("No host name specified!");
             } else if (args.length < 2) {
                 System.err.println("No port number specified!");
-            } else {
+            } else if (args.length < 3) {
                 System.err.println("No file name specified!");
+            } else if (args.length < 4) {
+                System.err.println("No timeout specified!");
+            } else if (args.length < 5) {
+                System.err.println("No window size specified!");
             }
             return false;
         }
@@ -88,11 +94,6 @@ public class Sender3 {
     public static void main(String[] args) throws IOException, InterruptedException {
         if (!validateArgs(args)) {
             System.exit(1);
-        }
-
-        if (args.length >= 5) {
-            timeout = Integer.parseInt(args[3]);
-            windowSize = Integer.parseInt(args[4]);
         }
 
         long time, size;
