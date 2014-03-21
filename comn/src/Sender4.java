@@ -154,7 +154,7 @@ public class Sender4 {
      * Resend all the packets that are not yet ACKed.
      */
     private void timeout(DatagramPacket packet) throws IOException {
-        System.out.println("Resending Packet.");
+        //System.out.println("Resending Packet.");
         socket.send(packet);
     }
 
@@ -169,7 +169,7 @@ public class Sender4 {
             if (nextSeqNum < base + windowSize) {
                 // We've not sent all possible packets yet
                 sendPackets.put(nextSeqNum, false);
-                System.out.printf("Sent packet %d\n", nextSeqNum);
+                //System.out.printf("Sent packet %d\n", nextSeqNum);
                 socket.send(packet);
                 // Start a timer for this packet
                 service.submit(new Timer(nextSeqNum, packet));
@@ -253,7 +253,7 @@ public class Sender4 {
     private synchronized void receivePacket(DatagramPacket packet) throws IOException {
         socket.receive(packet);
         int recACK = extractACK(packet);
-        System.out.printf("Received ACK %d\n", recACK);
+        //System.out.printf("Received ACK %d\n", recACK);
         if (recACK < base) {
             // Ignore smaller ACKs
             return;
@@ -266,8 +266,8 @@ public class Sender4 {
                 while (sendPackets.containsKey(base) && sendPackets.get(base) && base < nextSeqNum) {
                     base += 1;
                 }
-                System.out.printf("REC-ACK: %d\n", recACK);
-                System.out.printf("BASE: %d\n", base);
+                //System.out.printf("REC-ACK: %d\n", recACK);
+                //System.out.printf("BASE: %d\n", base);
             }
         }
     }
@@ -297,14 +297,14 @@ public class Sender4 {
                 nowTime = System.currentTimeMillis();
                 if (nowTime - startTime >= timeout) {
                     // Timeout the current packet
-                    System.out.println("Timed out.");
+                    //System.out.println("Timed out.");
                     try {
                         timeout(packet);
                         startTime = nowTime;
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    System.out.println("Restarting timer.");
+                    //System.out.println("Restarting timer.");
                 }
             }
             // Let the thread die if it's acked and remove from the map
