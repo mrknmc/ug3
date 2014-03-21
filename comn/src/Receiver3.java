@@ -154,9 +154,9 @@ public class Receiver3 {
                 lastSeq = expectedSeqNum;
                 outStream.write(packetData.array(), 0, packetData.position());
                 expectedSeqNum += 1;
-            }
-            if (fileDone) {
-                outStream.close();
+            } else {
+                // Reset fileDone in case it was set in extractPacket
+                fileDone = false;
             }
             sendACK(packet, lastSeq);
         }
