@@ -13,6 +13,7 @@ public class Receiver3 {
     private DatagramSocket socket;
     private FileOutputStream outStream;
     private int expectedSeqNum = 1;
+    private boolean fileDone = false;
 
     /**
      * Constructs a Receiver1 object from the given properties.
@@ -125,11 +126,11 @@ public class Receiver3 {
         dest.clear();
         byte[] data = packet.getData();
         int sequence = ByteBuffer.wrap(new byte[]{0, 0, data[1], data[0]}).getInt();
-        byte eof = data[2];
+        fileDone = data[2] == (byte) 1;
         // take everything except for the header
         dest.put(data, HEADER_SIZE, packet.getLength() - HEADER_SIZE);
         // return -1 on last packet
-        return eof == 1 ? -1 : sequence;
+        return sequence;
     }
 
     /**
@@ -142,7 +143,6 @@ public class Receiver3 {
         ByteBuffer packetData = ByteBuffer.allocate(getMsgSize());
         DatagramPacket packet = new DatagramPacket(buf, buf.length);
         int sequence;
-        boolean fileDone = false;
         int lastSeq = 0;
 
         while (true) {
@@ -154,13 +154,9 @@ public class Receiver3 {
                 lastSeq = expectedSeqNum;
                 outStream.write(packetData.array(), 0, packetData.position());
                 expectedSeqNum += 1;
-            } else if (sequence == -1) {
-                if (!fileDone) {
-                    lastSeq = expectedSeqNum;
-                    outStream.write(packetData.array(), 0, packetData.position());
-                    expectedSeqNum += 1;
-                }
-                fileDone = true;
+            }
+            if (fileDone) {
+                outStream.close();
             }
             sendACK(packet, lastSeq);
         }
