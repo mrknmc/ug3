@@ -1,0 +1,10 @@
+digraph G {
+    graph [ rankdir=LR ];
+    edge [len=3];
+    "home page" -> "log in";
+    "home page" -> "log out" [label = "logging out"];
+    "log in" -> "message board" [label = "logging in"];
+    "message board" -> "home page";
+    "message board" -> "log out" [label = "logging out"];
+    "log out" -> "log in", "home page";
+}

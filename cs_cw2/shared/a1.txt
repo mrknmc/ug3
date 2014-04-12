@@ -1,0 +1,24 @@
+
+Starting Nmap 5.00 ( http://nmap.org ) at 2014-03-22 16:53 CET
+Interesting ports on alice (192.168.1.2):
+Not shown: 990 closed ports
+PORT     STATE SERVICE VERSION
+21/tcp   open  ftp     WU-FTPD wu-2.6.2
+22/tcp   open  ssh     OpenSSH 5.3p1 Debian 3ubuntu5 (protocol 2.0)
+23/tcp   open  telnet  Linux telnetd
+25/tcp   open  smtp    Postfix smtpd
+80/tcp   open  http    Apache httpd 2.2.14 ((Ubuntu))
+111/tcp  open  rpcbind
+443/tcp  open  http    Apache httpd 2.2.14 ((Ubuntu))
+668/tcp  open  rpcbind
+2049/tcp open  rpcbind
+6000/tcp open  X11     (access denied)
+MAC Address: 08:00:27:ED:5B:F5 (Cadmus Computer Systems)
+Device type: general purpose
+Running: Linux 2.6.X
+OS details: Linux 2.6.17 - 2.6.28
+Network Distance: 1 hop
+Service Info: Host:  alice; OSs: Unix, Linux
+
+OS and Service detection performed. Please report any incorrect results at http://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 13.15 seconds
