@@ -1,4 +1,4 @@
-\documentclass[$if(fontsize)$$fontsize$,$endif$$if(lang)$$lang$,$endif$]{$documentclass$}
+\documentclass[headings=small,$if(fontsize)$$fontsize$,$endif$$if(lang)$$lang$,$endif$]{$documentclass$}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}
@@ -35,15 +35,23 @@ $if(mathfont)$
 $endif$
 \fi
 
-\usepackage{fancyhdr}
-\pagestyle{fancy}
-\pagenumbering{arabic}
-\lhead{\itshape $title$}
-\chead{}
-\rhead{\itshape{\nouppercase{\leftmark}}}
-\lfoot{v $version$}
-\cfoot{}
-\rfoot{\thepage}
+% \usepackage{fancyhdr}
+% \pagestyle{fancy}
+% \pagenumbering{arabic}
+% \lhead{\itshape $title$}
+% \chead{}
+% \rhead{\itshape{\nouppercase{\leftmark}}}
+% \lfoot{v $version$}
+% \cfoot{}
+% \rfoot{\thepage}
+
+\usepackage{sectsty}
+\usepackage{titlesec}
+
+\sectionfont{\fontsize{18pt}{0}\selectfont}
+\subsectionfont{\fontsize{11pt}{0}\selectfont}
+
+% \titlespacing\section{0pt}{14pt plus 4pt minus 2pt}{0pt plus 0pt minus 0pt}
 
 $if(geometry)$
 \usepackage[$for(geometry)$$geometry$$sep$,$endfor$]{geometry}
@@ -127,6 +135,12 @@ $if(lang)$
   \usepackage[$lang$]{babel}
 \fi
 $endif$
+\usepackage{fullpage}
+
+
+% $if(margin)$
+% \usepackage[margin=$margin$]{geometry}
+% $endif$
 $for(header-includes)$
 $header-includes$
 $endfor$
@@ -134,7 +148,14 @@ $endfor$
 $if(title)$
 \title{$title$}
 $endif$
-\author{$for(author)$$author$$sep$ \and $endfor$}
+\author{
+$for(author)$
+$if(author.name)$
+$author.name$$if(author.affiliation)$ ($author.affiliation$)$endif$
+$else$
+$author$
+$endif$
+$sep$ \and $endfor$}
 \date{$date$}
 
 \begin{document}

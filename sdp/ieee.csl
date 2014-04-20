@@ -73,7 +73,7 @@
       </layout>
    </citation>
    <bibliography entry-spacing="0" second-field-align="flush">
-      <layout suffix=".">
+      <layout>
          <text variable="citation-number" prefix="[" suffix="] "/>
          <text macro="author" prefix=" " suffix=", "/>
          <choose>

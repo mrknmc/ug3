@@ -12,7 +12,7 @@ all : $(PDFS)
 # This generic rule accepts PDF targets with corresponding Markdown
 # source, and makes them using pandoc
 %.pdf: %.md
-		pandoc -f markdown -t latex --template template.tex --filter pandoc-citeproc --mathjax --number-sections -V papersize:"a4paper" -V geometry:margin=1in -o $@ $<
+		pandoc -f markdown -t latex --template template.tex --filter pandoc-citeproc --mathjax --number-sections -o $@ $<
 
 # Remove all PDF outputs
 clean :
