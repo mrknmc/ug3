@@ -7,7 +7,7 @@ fontsize: 12pt
 
 # Introduction
 
-The purpose of this report is to describe my contribution to the SDP project for team 2, The Underdogs. My contribution to the team ranged from managing the team to working on all parts of the code base and robot design.
+The purpose of this report is to describe my contribution to the SDP project for team 2, The Underdogs, of which I was the leader. My contribution to the team ranged from managing the team to working on all parts of the code base and robot design.
 
 # Team Responsibilities
 
@@ -23,7 +23,7 @@ I started working on the vision system in week 2. I was suggesting to use a visi
 
 After our failure to field well-performing robots for milestone 3 and the assessed friendlies the team decided to change the vision system to use OpenCV library [[@opencv]](#appendix). The core of the new system was implemented by me with assistance from Julien in a span of a week. The system was based on the vision system of group 9 from 2012 [[@group9]](#appendix) who also used OpenCV.
 
-The new vision system correctly detected the position of the ball, and the position and orientation of robots. It ran at optimal 25 fps and was much simpler to parametrise. Moreover, I worked on including camera lens distortion correction and perspective correction. These improvements allowed for a more precise representation of objects on the pitch. For example after the perspective correction, the x-coordinate of the ball was within 1 cm from the x-coordinate of the robot.
+The new vision system correctly detected the position of the ball, and the position and orientation of robots. It ran at optimal 25 fps and was much simpler to parametrise. Moreover, I worked on including camera lens distortion correction and perspective correction. These improvements allowed for a more precise representation of objects on the pitch. For example after the perspective correction, the x-coordinate of the ball was within 1 cm from the x-coordinate of the robot when they were aligned on the pitch.
 
 Additionally, I worked on the main GUI of our program. For example, I re-wrote the thresholding tools so we would get immediate feedback after we change thresholds and I helped Gordon implement saving thresholds for each PC in a separate JSON file. This greatly reduced the time required for thresholding.
 
@@ -47,7 +47,7 @@ With the new grabber design the robot was able to reliably grab a ball from a di
 
 # Conclusion
 
-In conclusion, I believe that as the team leader and most active contributor to the project [[@contribs]](#appendix), my contribution was extensive and valuable.
+In conclusion, I believe that as the team leader and most active contributor to the project [[@contribs]](#appendix), my contribution was extensive and valuable. Although our team did not do remarkably well, I feel that I improved not only my programming skills, but also my ability to work as part of a team and my ability to communicate my thoughts.
 
 \newpage
 
