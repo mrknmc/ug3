@@ -1,0 +1,131 @@
+\documentclass[a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{fancyhdr}
+\usepackage{mathtools}
+\usepackage{amsmath ,amsthm ,amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+% \usepackage{courier}
+
+\title{DBS Coursework 1}
+\author{Mark Nemec}
+\date{2013-Oct-10'}
+\linespread{1.4}
+\lstset{basicstyle=\ttfamily,breaklines=true}
+\begin{document}
+\section*{Problem 1}
+\begin{enumerate}
+    \item \mbox{}
+    \begin{itemize}
+        \item rule-based
+        \begin{equation*}
+        answer(bar) :- LIKES(Joe, beer), SERVES(bar, beer, cost)
+        \end{equation*}
+        \item relational algebra
+        \begin{equation*}
+        \pi_{bar}(\sigma_{drinker='Joe'}(LIKES \bowtie SERVES))
+        \end{equation*}
+    \end{itemize}
+
+    \item \mbox{}
+    \begin{itemize}
+        \item rule-based
+        \begin{equation*}
+        answer(drinker) :- FREQUENTS(drinker, bar), SERVES(bar, beer, cost), cost < 3
+        \end{equation*}
+        \item relational algebra
+        \begin{equation*}
+        \pi_{drinker}(\sigma_{cost < 3}(FREQUENTS \bowtie SERVES))
+        \end{equation*}
+    \end{itemize}
+
+    \item \mbox{}
+    \begin{itemize}
+        \item rule-based
+        \begin{equation*}
+        answer(drinker) :- LIKES(drinker, beer), LIKES('Joe', beer), SERVES(bar, beer, cost), cost > 5
+        \end{equation*}
+        \item relational algebra
+        \begin{equation*}
+        \pi_{drinker}(LIKES \bowtie \pi_{beer}(\sigma_{drinker='Joe' \land cost > 5}(LIKES \bowtie SERVES)))
+        \end{equation*}
+    \end{itemize}
+\end{enumerate}
+
+\section*{Problem 2}
+\begin{enumerate}
+    \item \mbox{}
+        \begin{equation*}
+        \pi_{drinker}(LIKES) - \pi_{drinker}(FREQUENTS \bowtie LIKES)
+        \end{equation*}
+
+    \item \mbox{}
+        \begin{equation*}
+        \pi_{drinker}(\sigma_{beer='Stella Artois' \lor beer='Warsteiner'}(SERVES \bowtie FREQUENTS))
+        \end{equation*}
+
+    \item \mbox{}
+    \begin{itemize}
+        \item relational algebra
+        \begin{gather*}
+        \pi_{bar}(SERVES)-\pi_{bar}(\pi_{bar}(SERVES) \times \pi_{beer}(\sigma_{drinker='Joe'}(LIKES)) \\
+        - \pi_{bar, beer}(\sigma_{drinker='Joe'}(SERVES \bowtie LIKES)))
+        \end{gather*}
+        \item relational calculus
+        \begin{equation*}
+        \{ bar \mid \forall beer \exists cost (\neg LIKES('Joe', beer) \lor SERVES(bar, beer, cost)) \}
+        \end{equation*}
+    \end{itemize}
+\end{enumerate}
+
+\section*{Problem 3}
+\begin{itemize}
+        \item relational algebra
+        \begin{equation*}
+        \pi_{bar}(\sigma_{drinker='Joe'}(SERVES \bowtie LIKES)) - \pi_{bar}(\sigma_{drinker='Michael'}(SERVES \bowtie LIKES))
+        \end{equation*}
+        \item relational calculus
+        \begin{equation*}
+        \{ bar \mid \exists b1, cost (LIKES('Joe', b1) \land SERVES(bar, b1, cost) \land \forall b2 (\neg LIKES('Michael', b2) \lor b2 \not= b1)) \}
+        \end{equation*}
+        \item SQL
+        \begin{lstlisting}
+        SELECT DISTINCT bar
+        FROM SERVES, LIKES
+        WHERE SERVES.beer = LIKES.beer AND LIKES.drinker = 'Joe'
+    EXCEPT
+        SELECT bar
+        FROM SERVES, LIKES
+        WHERE SERVES.beer = LIKES.beer AND LIKES.drinker = 'Michael'
+        \end{lstlisting}
+\end{itemize}
+
+\section*{Problem 4}
+\begin{itemize}
+        \item relational algebra
+        \begin{gather*}
+        \pi_{drinker}(FREQUENTS \bowtie (\sigma_{(c_1 \leq 3 \lor c_2 \leq 3) \land b_1 \not= b_2}( \\
+        (\rho_{c_1 \gets cost, b_1 \gets beer} (SERVES \bowtie LIKES))
+        \bowtie (\rho_{c_2 \gets cost, b_2 \gets beer} (SERVES \bowtie LIKES)))))
+        \end{gather*}
+        \item relational calculus
+        \begin{gather*}
+        \{ drinker \mid \exists b_1, b_2, bar, c_1, c_2(LIKES(drinker, b_1) \land (LIKES(drinker, b_2) \land b_1 \not= b_2 \land \\
+        FREQUENTS(drinker, bar) \land SERVES(bar, b_1, c_1) \land SERVES(bar, b_2, c_2) \land (c_1 \leq 3 \lor c_2 \leq 3)) \}
+        \end{gather*}
+        \item SQL
+        \begin{lstlisting}
+        SELECT DISTINCT F.drinker
+        FROM Frequents F, Likes L1, Likes L2, Serves S1, Serves S2
+        WHERE S1.beer <> S2.beer
+          AND S1.bar = S2.bar
+          AND (S1.cost <= 3 OR S2.cost <= 3)
+          AND L1.beer = S1.beer
+          AND L2.beer = S2.beer
+          AND L1.drinker = F.drinker
+          AND L2.drinker = F.drinker
+          AND F.bar = S2.bar
+        \end{lstlisting}
+\end{itemize}
+\end{document}

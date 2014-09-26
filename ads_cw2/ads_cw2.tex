@@ -1,0 +1,81 @@
+\documentclass[a4paper]{article}
+\usepackage[margin=3cm]{geometry}
+\usepackage{fancyhdr}
+\usepackage{mathtools}
+\usepackage{amsmath ,amsthm ,amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\errorcontextlines 10000
+
+\title{ADS Coursework 2 - Task 3}
+\author{s1140740}
+\date{2013-Nov-11}
+\linespread{1.3}
+
+\begin{document}
+\maketitle
+
+\def \counthat {\widehat{count}(n, n^2)}
+\def \counthati {\widehat{count}(i, b)}
+\def \counthatiminus {\widehat{count}(i-1, b)}
+\def \count {count(n, B)}
+
+
+We need to add some definitions that we will later use in our proofs. Let $S = \{ y \in \{0,1\}^n : \sum_{i=1}^{n}w_iy_i \leq B \}$, the set of solutions for $\count$ and $S' = \{ y \in \{0,1\}^n : \sum_{i=1}^{n}a_iy_i \leq n^2 \}$ the set of solutions for $\counthat$. Without loss of generality, we can assume that the elements of the solution are sorted by the weights.
+
+\section*{Step 1}
+Proof by contradiction. Suppose there is a solution $y \in S$ such that $y \not \in S'$.
+Thus, we have:
+\addtolength{\jot}{1em}
+\begin{align*}
+    && \sum_{i=1}^{n}w_iy_i &\leq B \\
+    && n^2 \sum_{i=1}^{n} w_iy_i &\leq B n^2 \\
+    && \sum_{i=1}^{n} \frac{n^2 w_i}{B} y_i &\leq n^2 && \text{and since } \lfloor x \rfloor \leq x \text{, then} \\
+    && \sum_{i=1}^{n} \left \lfloor \frac{n^2 w_i}{B} \right \rfloor y_i &\leq n^2 && \text{substituting } a_i = \left \lfloor \frac{n^2w_i}{B} \right \rfloor \text{,we get} \\
+    && \sum_{i=1}^{n} a_i y_i &\leq n^2 \tag{\theequation}\label{eq1}
+\end{align*}
+
+However,~\eqref{eq1} is the condition elements must satisfy to belong to $S'$.
+This means we have arrived at a contradiction and therefore all elements that belong to $S$ also belong to $S'$.
+
+\section*{Step 2}
+We define $k$ to be the index of the largest element $w_k$, such that:
+\begin{equation*}
+    w_k \leq \frac{B}{n} \text{, which implies } \sum_{i=1}^{k}w_i \leq k \frac{B}{n} \leq B \hspace{3em} \text{ since } k \leq n
+\end{equation*}
+and $l$ to be the index of the largest element $a_l$ of a solution $y$, $y \in S'$.
+Additionally, we define $T = S' \setminus S$. \\
+Now, we define our function $f: S' \rightarrow S$ such that no element in $S$ is the image of $f(y)$ for more than $n+1$ different $y$:
+\begin{align}
+    f(y) & = y && \text{ if } y \in S \label{eqs} \\
+    f(y) & = y \setminus \{ l \} && \text{ if } y \in T \label{eqt}
+\end{align}
+It is clear that~\eqref{eqs} is a mapping from $S'$ to $S$. Now we need to prove the same for~\eqref{eqt}.
+We assume that we have a solution $y \in T$.
+There are two cases:
+\begin{enumerate}
+\item $l \leq k$ \\
+Since $w_l$ is the largest element of the solution and $\sum_{i=1}^{k}w_i \leq B$, hence $y \in S$ which contradicts the fact that $y \in T$ (remember: $T = S' \setminus S$). Thus, this is not possible.
+
+\item $l > k$ \\
+From definition of $T$, we know that:
+\begin{align*}
+    \sum_{i \in T} \left \lfloor \frac{w_in^2}{B} \right \rfloor y_i & \leq n^2 && \text{ since } a_i = \left \lfloor \frac{n^2w_i}{B} \right \rfloor \\
+    \sum_{i \in T} \left ( \frac{w_in^2}{B} - \epsilon_i \right ) y_i & \leq n^2 && \text{ where } 0 \leq \epsilon_i < 1 \\
+    \frac{n^2}{B} \sum_{i \in T} \left ( w_i - \sigma_i \right ) y_i & \leq n^2 && \text{ where } 0 \leq \sigma_i < \frac{B}{n^2} \text{ and } \sigma_i = \frac{B\epsilon_i}{n^2} \\
+    w_ly_l + \sum_{i \in f(T)} w_iy_i - \sum_{i \in T} \sigma_iy_i & \leq B && \text{ since } f(T) = T \setminus \{ l \} \\
+    \sum_{i \in f(T)} w_iy_i & \leq B - \frac{B}{n} + \sum_{i \in T} \sigma_iy_i && \text{ since } w_l > \frac{B}{n} \text{ and } y_l = 1 \\
+    \sum_{i \in f(T)} w_iy_i & \leq B - \frac{B}{n} + \frac{B}{n^2} \sum_{i \in T} \epsilon_i && \text{ and since } \epsilon_i < 1\\
+    \sum_{i \in f(T)} w_iy_i & \leq B  && \text{ since } |T| \leq n \tag{\theequation}\label{eq2}
+\end{align*}
+\end{enumerate}
+Notice, that~\eqref{eq2} is the condition for $y$ to be a member of $S$. Thus, we have found a function that maps elements from $T$ to $S$. Furthermore, we prove that $f$ maps at most $n + 1$ elements of $S'$ to $S$.
+This is because every solution in $S$ is mapped to itself and for each solution in $S$ there are $n$ possible largest elements $w_l$ which means at most $n$ solutions from $T$ are mapped to an element in $S$.
+
+\section*{Step 3}
+Clearly lines 1 and 5 take $\Theta(1)$ time. The loop on lines 2 and 3 is executed exactly $n$ times since $k$ goes from 1 to $n$.
+The specification states that the call to countKnapsackDP on line 4 takes $\Theta(n \cdot n^2)$ time since the length of $a$ is $n$.
+Combining this, we get a runtime of $\Theta(1) + n \cdot \Theta(1) + \Theta(n^3) = \Theta(n^3)$.
+
+\end{document}
